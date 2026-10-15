@@ -3,13 +3,6 @@
   publish = "."
   command = ""
 
-# Redirect www to the main domain
-[[redirects]]
-  from = "https://www.bardium.in/*"
-  to = "https://bardium.in/:splat"
-  status = 301
-  force = true
-
 # Keep the docs in the repo but not on the public site
 [[redirects]]
   from = "/README.md"
