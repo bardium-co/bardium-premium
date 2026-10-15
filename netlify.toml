@@ -1,0 +1,24 @@
+# Netlify settings — no build step needed, the site is plain HTML/CSS/JS.
+[build]
+  publish = "."
+  command = ""
+
+# Redirect www to the main domain
+[[redirects]]
+  from = "https://www.bardium.in/*"
+  to = "https://bardium.in/:splat"
+  status = 301
+  force = true
+
+# Keep the docs in the repo but not on the public site
+[[redirects]]
+  from = "/README.md"
+  to = "/404.html"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/DEPLOY-GUIDE.md"
+  to = "/404.html"
+  status = 404
+  force = true
