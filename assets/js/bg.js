@@ -12,11 +12,67 @@
   var LOGO_PATH = "M29.00,3.00 52.50,16.57 52.50,114.58 5.00,142.00 5.00,114.86 29.00,101.00Z M53.30,142.00 123.50,101.47 123.50,74.47 76.50,47.33 76.50,74.33 99.50,87.61 53.30,114.29Z";
   var LOGO_BOX = { x: 4, y: 2, w: 121, h: 141 };
 
-  /* ---------- Pointer (global) ---------- */
-  var pointer = { x: -9999, y: -9999, active: false };
-  window.addEventListener("pointermove", function (e) { pointer.x = e.clientX; pointer.y = e.clientY; pointer.active = true; }, { passive: true });
-  document.addEventListener("pointerleave", function () { pointer.active = false; });
+  var IS_TOUCH = (window.matchMedia && window.matchMedia("(hover: none), (pointer: coarse)").matches) || ("ontouchstart" in window);
+
+  /* ---------- Haptics: Android vibration + iOS (Safari 18+) switch haptic ---------- */
+  var Haptics = (function () {
+    var last = 0, sw = null, lbl = null;
+    var canVib = typeof navigator.vibrate === "function";
+    function ios() {
+      if (!lbl) {
+        sw = document.createElement("input"); sw.type = "checkbox"; sw.setAttribute("switch", ""); sw.id = "bd-haptic-sw";
+        sw.className = "bd-haptic"; sw.tabIndex = -1; sw.setAttribute("aria-hidden", "true");
+        lbl = document.createElement("label"); lbl.htmlFor = "bd-haptic-sw"; lbl.className = "bd-haptic"; lbl.setAttribute("aria-hidden", "true");
+        document.body.appendChild(sw); document.body.appendChild(lbl);
+      }
+      lbl.click(); if (sw.blur) sw.blur();
+    }
+    return {
+      fire: function (pattern, force) {
+        if (!IS_TOUCH || REDUCED) return;
+        var now = performance.now(); if (!force && now - last < 45) return; last = now;
+        try { if (canVib) navigator.vibrate(pattern); else ios(); } catch (e) { /* not supported */ }
+      }
+    };
+  })();
+  window.BardiumHaptics = Haptics;
+
+  /* ---------- Pointer (mouse + finger) ---------- */
+  var pointer = { x: -9999, y: -9999, active: false, touch: false };
+  var releaseT;
+  window.addEventListener("pointermove", function (e) {
+    pointer.x = e.clientX; pointer.y = e.clientY; pointer.active = true; pointer.touch = e.pointerType !== "mouse";
+  }, { passive: true });
+  function touchAt(t) { pointer.x = t.clientX; pointer.y = t.clientY; pointer.active = true; pointer.touch = true; clearTimeout(releaseT); }
+  window.addEventListener("touchstart", function (e) { if (e.touches[0]) touchAt(e.touches[0]); }, { passive: true });
+  window.addEventListener("touchmove", function (e) { if (e.touches[0]) touchAt(e.touches[0]); }, { passive: true });
+  window.addEventListener("touchend", function () { releaseT = setTimeout(function () { pointer.active = false; pointer.touch = false; }, 900); }, { passive: true });
+  document.addEventListener("pointerleave", function () { if (!pointer.touch) pointer.active = false; });
   window.addEventListener("blur", function () { pointer.active = false; });
+
+  /* ---------- Tilt (gyroscope) on phones & tablets ---------- */
+  var tilt = { x: 0, y: 0, on: false };
+  function onOrient(e) {
+    if (e.gamma == null || e.beta == null) return;
+    var ang = (screen.orientation && screen.orientation.angle) || window.orientation || 0;
+    var gx = e.gamma, by = e.beta - 40;
+    if (Math.abs(ang) === 90) { gx = ang === 90 ? e.beta : -e.beta; by = (ang === 90 ? -e.gamma : e.gamma) - 30; }
+    gx = Math.max(-1, Math.min(1, gx / 22)); by = Math.max(-1, Math.min(1, by / 22));
+    tilt.x += (gx - tilt.x) * 0.18; tilt.y += (by - tilt.y) * 0.18; tilt.on = true;
+  }
+  if (IS_TOUCH && !REDUCED && "DeviceOrientationEvent" in window) {
+    if (typeof DeviceOrientationEvent.requestPermission !== "function") {
+      window.addEventListener("deviceorientation", onOrient);
+    } else {
+      var asked = false;
+      document.addEventListener("click", function (e) {
+        if (asked || !e.isTrusted || e.target.closest("a,button,input,textarea,select,label,.hl-secure,.ai-flip")) return;
+        if (!e.target.closest("section")) return;
+        asked = true;
+        DeviceOrientationEvent.requestPermission().then(function (st) { if (st === "granted") window.addEventListener("deviceorientation", onOrient); }).catch(function () {});
+      });
+    }
+  }
 
   /* ---------- Simplex-ish noise (compact 3D value-gradient noise) ---------- */
   var perm = new Uint8Array(512);
@@ -70,8 +126,17 @@
   Scene.prototype.updatePointer = function () {
     var r = this.canvas.getBoundingClientRect();
     this.rect = r;
+    this.tilting = false;
     if (pointer.active && pointer.x >= r.left && pointer.x <= r.right && pointer.y >= r.top && pointer.y <= r.bottom) {
       this.mx = pointer.x - r.left; this.my = pointer.y - r.top; this.hover = true;
+    } else if (tilt.on && !pointer.active) {
+      // phone tilt drives a virtual "finger" inside the visible part of the scene
+      var vt = Math.max(0, -r.top), vb = Math.min(r.height, window.innerHeight - r.top);
+      if (vb - vt > 40) {
+        this.mx = r.width / 2 + tilt.x * r.width * 0.38;
+        this.my = (vt + vb) / 2 + tilt.y * (vb - vt) * 0.38;
+        this.hover = true; this.tilting = true;
+      } else this.hover = false;
     } else { this.hover = false; }
   };
   Scene.prototype.frame = function (dt) {
@@ -94,9 +159,10 @@
   var LogoParticles = inherit(function (c, o) { Scene.call(this, c, o); this.opts.maxDpr = 1.75; });
   LogoParticles.prototype.setup = function () {
     var w = this.w, h = this.h, mobile = w < 760 || (w < 1000 && h > w * 0.9);
-    var size = mobile ? Math.min(h * 0.25, w * 0.55, 300) : Math.min(h * 0.66, w * 0.36);
+    var tablet = mobile && w >= 600, short = mobile && !tablet && h < 790;
+    var size = tablet ? Math.min(h * 0.34, w * 0.5, 440) : short ? Math.min(h * 0.2, w * 0.45) : mobile ? Math.min(h * 0.25, w * 0.55, 300) : Math.min(h * 0.66, w * 0.36);
     var cx = mobile ? w * 0.5 : w * 0.74;
-    var cy = mobile ? h * 0.215 : h * 0.5;
+    var cy = tablet ? h * 0.26 : short ? h * 0.175 : mobile ? h * 0.215 : h * 0.5;
     var scale = size / LOGO_BOX.h;
     var lw = LOGO_BOX.w * scale, lh = LOGO_BOX.h * scale;
     var ox = cx - lw / 2, oy = cy - lh / 2;
@@ -141,10 +207,15 @@
     var self = this;
     if (!this.bound) {
       this.bound = true;
-      var sec = this.canvas.closest("section") || this.canvas.parentNode;
-      sec.addEventListener("click", function (e) { if (!e.target.closest("a,button,input,textarea,select")) self.explode(); });
     }
     if (REDUCED) this.parts.forEach(function (p) { p.x = p.tx; p.y = p.ty; });
+  };
+  LogoParticles.prototype.burst = function (x, y) {
+    this.parts.forEach(function (p) {
+      var dx = p.x - x, dy = p.y - y, d = Math.sqrt(dx * dx + dy * dy) || 1;
+      var f = (30 * Math.exp(-d / 240) + 4) * p.z;
+      p.vx += dx / d * f; p.vy += dy / d * f;
+    });
   };
   LogoParticles.prototype.explode = function () {
     var c = this.center;
@@ -172,7 +243,7 @@
     // auto pulse every ~9s
     if (!REDUCED && Math.floor(t / 9) !== this.lastPulse) { this.lastPulse = Math.floor(t / 9); if (t > 4) this.explode(); }
 
-    var mx = this.mx, my = this.my, hover = this.hover, R = 110, R2 = R * R;
+    var mx = this.mx, my = this.my, hover = this.hover, R = pointer.touch ? 130 : 110, R2 = R * R, touched = 0;
     var band = ((t * 0.35) % 2.2 - 0.6); // shimmer sweep
     var c = this.center;
     for (var j = 0; j < this.parts.length; j++) {
@@ -183,7 +254,7 @@
       var ax = (tx - p.x) * 0.018, ay = (ty - p.y) * 0.018;
       if (hover) {
         var dx = p.x - mx, dy = p.y - my, dd = dx * dx + dy * dy;
-        if (dd < R2) { var f = (1 - dd / R2) * 3.2; var dl = Math.sqrt(dd) || 1; ax += dx / dl * f; ay += dy / dl * f; }
+        if (dd < R2) { var f = (1 - dd / R2) * (this.tilting ? 1.6 : 3.2); var dl = Math.sqrt(dd) || 1; ax += dx / dl * f; ay += dy / dl * f; touched++; }
       }
       p.vx = (p.vx + ax * k) * Math.pow(0.9, k);
       p.vy = (p.vy + ay * k) * Math.pow(0.9, k);
@@ -197,6 +268,10 @@
       ctx.fillRect(p.x - s / 2, p.y - s / 2, s, s);
     }
     ctx.globalAlpha = 1;
+    // "touching sand" haptic ticks while a finger drags through the logo
+    if (pointer.touch && hover && !this.tilting && touched > 30 && performance.now() - (this.lastTick || 0) > 95) {
+      this.lastTick = performance.now(); Haptics.fire(Math.min(14, 4 + touched / 40));
+    }
   };
 
   /* =========================================================
@@ -207,7 +282,9 @@
     var d = this.density();
     this.cols = Math.round(64 * Math.sqrt(d) + 10);
     this.rows = Math.round(34 * Math.sqrt(d) + 6);
+    this.rips = this.rips || [];
   };
+  DotWave.prototype.burst = function (x, y) { this.rips.push({ x: x, y: y, t: this.t }); };
   DotWave.prototype.draw = function () {
     var ctx = this.ctx, w = this.w, h = this.h, t = this.t;
     ctx.clearRect(0, 0, w, h);
@@ -216,16 +293,24 @@
     var fov = 340, camY = this.opts.cam || 170, horizon = h * (this.opts.horizon || 0.42);
     var spreadX = w * 1.5, depth = 1400;
     var mxn = this.hover ? (this.mx / w - 0.5) : 0;
+    for (var qq = this.rips.length - 1; qq >= 0; qq--) if (t - this.rips[qq].t > 2.6) this.rips.splice(qq, 1);
     for (var r = 0; r < rows; r++) {
       var z = (r / (rows - 1)) * depth + 40;
       var scale = fov / (fov + z);
       for (var c = 0; c < cols; c++) {
         var xw = (c / (cols - 1) - 0.5) * spreadX * 2;
         var y = Math.sin(xw * 0.0045 + t * 0.9) * 38 + Math.cos(z * 0.006 - t * 0.7) * 44 + noise3(xw * .0015, z * .0015, t * .2) * 70;
-        if (this.hover) {
+        if (this.hover || this.rips.length) {
           var sx0 = w / 2 + xw * scale, sy0 = horizon + (camY - y) * scale;
-          var dx = sx0 - this.mx, dy = sy0 - this.my, dd = Math.sqrt(dx * dx + dy * dy);
-          y += Math.max(0, 1 - dd / 220) * 60 * Math.sin(dd * 0.05 - t * 6);
+          if (this.hover) {
+            var dx = sx0 - this.mx, dy = sy0 - this.my, dd = Math.sqrt(dx * dx + dy * dy);
+            y += Math.max(0, 1 - dd / 220) * 60 * Math.sin(dd * 0.05 - t * 6);
+          }
+          for (var q = 0; q < this.rips.length; q++) {
+            var rp = this.rips[q], age = t - rp.t, ex = sx0 - rp.x, ey = sy0 - rp.y, ed = Math.sqrt(ex * ex + ey * ey);
+            var front = age * 420, band = Math.max(0, 1 - Math.abs(ed - front) / 110);
+            y += band * 120 * (1 - age / 2.6) * Math.sin(ed * 0.04 - age * 9);
+          }
         }
         var sx = w / 2 + (xw + mxn * 200 * (1 - scale)) * scale;
         var sy = horizon + (camY - y) * scale;
@@ -253,8 +338,9 @@
     }
     this.ring = [];
     for (var k = 0; k < 3; k++) for (var m = 0; m < 110; m++) this.ring.push([m / 110 * TAU + k * 0.02, 1.42 + k * 0.07, 0]);
-    this.rx = 0.35; this.ry = 0;
+    this.rx = 0.35; this.ry = 0; this.spin = 0; this.pulse = 0;
   };
+  DotSphere.prototype.burst = function () { this.spin += 0.22; this.pulse = 1; };
   DotSphere.prototype.draw = function (k) {
     var ctx = this.ctx, w = this.w, h = this.h, t = this.t;
     ctx.clearRect(0, 0, w, h);
@@ -262,7 +348,9 @@
     var R = Math.min(w, h) * (this.opts.r || 0.32);
     var trx = 0.35 + (this.hover ? (this.my / h - 0.5) * 0.8 : 0);
     this.rx += (trx - this.rx) * 0.05;
-    this.ry += 0.0035 * k + (this.hover ? (this.mx / w - 0.5) * 0.02 : 0);
+    this.ry += 0.0035 * k + (this.hover ? (this.mx / w - 0.5) * 0.02 : 0) + this.spin * k;
+    this.spin *= Math.pow(0.95, k); this.pulse *= Math.pow(0.94, k);
+    R *= 1 + this.pulse * 0.12 * Math.sin(this.pulse * 12);
     var cX = Math.cos(this.rx), sX = Math.sin(this.rx), cY = Math.cos(this.ry), sY = Math.sin(this.ry);
     ctx.fillStyle = "#fff";
     for (var i = 0; i < this.pts.length; i++) {
@@ -305,6 +393,10 @@
     for (var i = 0; i < n; i++) this.nodes.push({ x: rand(0, this.w), y: rand(0, this.h), vx: rand(-.25, .25), vy: rand(-.25, .25), r: rand(1, 2.2), glow: 0 });
     this.pulses = []; this.nextPulse = 0;
   };
+  Network.prototype.burst = function (x, y) {
+    this.pulses.push({ r: 0, x: x, y: y, strong: 1 });
+    this.nodes.forEach(function (a) { var dx = a.x - x, dy = a.y - y, d = Math.sqrt(dx * dx + dy * dy) || 1; if (d < 220) { a.vx += dx / d * 1.6; a.vy += dy / d * 1.6; a.glow = 1; } });
+  };
   Network.prototype.draw = function (k) {
     var ctx = this.ctx, w = this.w, h = this.h, t = this.t;
     ctx.clearRect(0, 0, w, h);
@@ -343,8 +435,8 @@
     for (var p = this.pulses.length - 1; p >= 0; p--) {
       var pu = this.pulses[p]; pu.r += 2.6 * k;
       if (pu.r > maxR) { this.pulses.splice(p, 1); continue; }
-      ctx.beginPath(); ctx.arc(cx, cy, pu.r, 0, TAU);
-      ctx.strokeStyle = "rgba(255,255,255," + (0.22 * (1 - pu.r / maxR)) + ")"; ctx.lineWidth = 1; ctx.stroke();
+      ctx.beginPath(); ctx.arc(pu.x != null ? pu.x : cx, pu.y != null ? pu.y : cy, pu.r, 0, TAU);
+      ctx.strokeStyle = "rgba(255,255,255," + ((pu.strong ? 0.5 : 0.22) * (1 - pu.r / maxR)) + ")"; ctx.lineWidth = pu.strong ? 1.5 : 1; ctx.stroke();
     }
     // nodes
     var nodes = this.nodes, D = w < 760 ? 110 : 150, D2 = D * D;
@@ -355,8 +447,12 @@
       if (a.y < 0 || a.y > h) a.vy *= -1;
       if (this.hover) { var mdx = a.x - this.mx, mdy = a.y - this.my; var md = mdx * mdx + mdy * mdy; if (md < 16000) { a.x += mdx * 0.01; a.y += mdy * 0.01; a.glow = 1; } }
       var dcx = a.x - cx, dcy = a.y - cy, dc = Math.sqrt(dcx * dcx + dcy * dcy);
-      for (var q = 0; q < this.pulses.length; q++) if (Math.abs(dc - this.pulses[q].r) < 6) a.glow = 1;
+      for (var q = 0; q < this.pulses.length; q++) {
+        var pq = this.pulses[q], dpc = pq.x != null ? Math.sqrt((a.x - pq.x) * (a.x - pq.x) + (a.y - pq.y) * (a.y - pq.y)) : dc;
+        if (Math.abs(dpc - pq.r) < 6) a.glow = 1;
+      }
       a.glow *= Math.pow(0.96, k);
+      var sp = Math.sqrt(a.vx * a.vx + a.vy * a.vy); if (sp > 0.4) { a.vx *= 0.97; a.vy *= 0.97; }
     }
     ctx.lineWidth = 0.7;
     for (i = 0; i < nodes.length; i++) {
@@ -398,12 +494,15 @@
         this.cells.push({ x: x, y: y, e: 0, r: Math.random() });
       }
     }
+    this.rings = [];
   };
+  HexScan.prototype.burst = function (x, y) { this.rings.push({ x: x, y: y, r: 0 }); };
   HexScan.prototype.draw = function (k) {
     var ctx = this.ctx, w = this.w, h = this.h, t = this.t, s = this.size;
     ctx.clearRect(0, 0, w, h);
     var cx = w * 0.5, cy = h * 0.5;
     var ang = (t * 0.55) % TAU;
+    for (var rr = this.rings.length - 1; rr >= 0; rr--) { this.rings[rr].r += 7 * k; if (this.rings[rr].r > Math.max(w, h) * 1.2) this.rings.splice(rr, 1); }
     var maxD = Math.sqrt(cx * cx + cy * cy);
     for (var i = 0; i < this.cells.length; i++) {
       var c = this.cells[i];
@@ -412,6 +511,7 @@
       if (diff < 0.12) c.e = 1;
       if (this.hover) { var dx = c.x - this.mx, dy = c.y - this.my; if (dx * dx + dy * dy < 9000) c.e = Math.max(c.e, 0.9); }
       if (c.r > 0.985 && Math.random() < 0.004) c.e = 1;
+      for (var g = 0; g < this.rings.length; g++) { var rg = this.rings[g], rdx = c.x - rg.x, rdy = c.y - rg.y; if (Math.abs(Math.sqrt(rdx * rdx + rdy * rdy) - rg.r) < s) c.e = 1; }
       c.e *= Math.pow(0.975, k);
       var dist = Math.sqrt((c.x - cx) * (c.x - cx) + (c.y - cy) * (c.y - cy)) / maxD;
       var base = 0.05 + (1 - dist) * 0.06;
@@ -441,15 +541,21 @@
     for (var i = 0; i < n; i++) this.ps.push({ x: rand(0, this.w), y: rand(0, this.h), life: rand(50, 300), a: rand(.15, .55) });
     this.ctx.fillStyle = "#000"; this.ctx.fillRect(0, 0, this.w, this.h);
   };
+  FlowField.prototype.burst = function (x, y) {
+    this.swirl = { x: x, y: y, s: 1 };
+    for (var i = 0; i < this.ps.length; i += 3) { var a = rand(0, TAU), d = rand(0, 60); this.ps[i].x = x + Math.cos(a) * d; this.ps[i].y = y + Math.sin(a) * d; this.ps[i].life = rand(60, 200); }
+  };
   FlowField.prototype.draw = function (k) {
     var ctx = this.ctx, w = this.w, h = this.h, t = this.t;
     ctx.globalAlpha = 1;
     ctx.fillStyle = "rgba(0,0,0,0.075)"; ctx.fillRect(0, 0, w, h);
     ctx.lineWidth = 0.9;
+    if (this.swirl) this.swirl.s *= Math.pow(0.985, k);
     for (var i = 0; i < this.ps.length; i++) {
       var p = this.ps[i];
       var ang = noise3(p.x * 0.0022, p.y * 0.0022, t * 0.08) * TAU * 1.6;
       if (this.hover) { var dx = p.x - this.mx, dy = p.y - this.my, dd = dx * dx + dy * dy; if (dd < 30000) ang += (1 - dd / 30000) * Math.atan2(dy, dx) * 0.8; }
+      if (this.swirl && this.swirl.s > 0.02) { var sx = p.x - this.swirl.x, sy = p.y - this.swirl.y, sd = Math.sqrt(sx * sx + sy * sy); if (sd < 320) ang = Math.atan2(sy, sx) + Math.PI / 2.4 * (1 - sd / 320) * this.swirl.s + ang * (1 - this.swirl.s); }
       var sp = 1.4 * k;
       var nx = p.x + Math.cos(ang) * sp, ny = p.y + Math.sin(ang) * sp;
       ctx.strokeStyle = "rgba(255,255,255," + p.a + ")";
@@ -467,6 +573,7 @@
     this.gap = this.w < 760 ? 22 : 28;
     this.ripples = []; this.nextR = 0;
   };
+  RippleGrid.prototype.burst = function (x, y) { this.ripples.push({ x: x, y: y, r: 0, m: 2 }); };
   RippleGrid.prototype.draw = function (k) {
     var ctx = this.ctx, w = this.w, h = this.h, t = this.t, g = this.gap;
     ctx.clearRect(0, 0, w, h);
@@ -480,7 +587,7 @@
         for (var i = 0; i < this.ripples.length; i++) {
           var rp = this.ripples[i], dx = x - rp.x, dy = y - rp.y, d = Math.sqrt(dx * dx + dy * dy);
           var band = 1 - Math.min(1, Math.abs(d - rp.r) / 46);
-          if (band > 0) { var fall = (1 - rp.r / 700) * band; s += fall * 2.6; if (d > 0) { dx0 += dx / d * fall * 5; dy0 += dy / d * fall * 5; } }
+          if (band > 0) { var fall = (1 - rp.r / 700) * band * (rp.m || 1); s += fall * 2.6; if (d > 0) { dx0 += dx / d * fall * 5; dy0 += dy / d * fall * 5; } }
         }
         if (this.hover) { var mdx = x - this.mx, mdy = y - this.my, md = Math.sqrt(mdx * mdx + mdy * mdy); if (md < 140) s += (1 - md / 140) * 2.2; }
         ctx.globalAlpha = Math.min(0.85, 0.2 + (s - 1.1) * 0.22);
@@ -498,8 +605,9 @@
     this.frames = []; for (var i = 0; i < 26; i++) this.frames.push(i / 26);
     var n = Math.round(160 * this.density() + 40);
     this.stars = []; for (var j = 0; j < n; j++) this.stars.push({ a: rand(0, TAU), z: rand(0, 1), sp: rand(.4, 1) });
-    this.ox = 0; this.oy = 0;
+    this.ox = 0; this.oy = 0; this.zoff = 0; this.boost = 0;
   };
+  Tunnel.prototype.burst = function () { this.boost = 1; };
   Tunnel.prototype.draw = function (k) {
     var ctx = this.ctx, w = this.w, h = this.h, t = this.t;
     ctx.clearRect(0, 0, w, h);
@@ -508,8 +616,9 @@
     this.ox += (tx - this.ox) * 0.05; this.oy += (ty - this.oy) * 0.05;
     var cx = w / 2 + this.ox, cy = h / 2 + this.oy;
     var maxS = Math.max(w, h) * 1.25;
+    this.zoff += 0.00075 * k * (1 + this.boost * 9); this.boost *= Math.pow(0.965, k);
     for (var i = 0; i < this.frames.length; i++) {
-      var z = (this.frames[i] + t * 0.045) % 1;
+      var z = (this.frames[i] + this.zoff) % 1;
       var e = Math.pow(z, 2.4);
       var size = 12 + e * maxS;
       var px = cx + (w / 2 - cx) * e, py = cy + (h / 2 - cy) * e;
@@ -524,7 +633,7 @@
     }
     for (var j = 0; j < this.stars.length; j++) {
       var s = this.stars[j];
-      s.z += 0.006 * s.sp * k; if (s.z > 1) { s.z = 0; s.a = rand(0, TAU); }
+      s.z += 0.006 * s.sp * k * (1 + this.boost * 5); if (s.z > 1) { s.z = 0; s.a = rand(0, TAU); }
       var d0 = Math.pow(s.z, 2.2) * maxS * 0.6, d1 = Math.pow(Math.max(0, s.z - 0.04), 2.2) * maxS * 0.6;
       ctx.strokeStyle = "rgba(255,255,255," + (s.z * 0.7) + ")"; ctx.lineWidth = 0.6 + s.z;
       ctx.beginPath(); ctx.moveTo(cx + Math.cos(s.a) * d1, cy + Math.sin(s.a) * d1); ctx.lineTo(cx + Math.cos(s.a) * d0, cy + Math.sin(s.a) * d0); ctx.stroke();
@@ -538,9 +647,10 @@
   Orbits.prototype.setup = function () {
     this.rings = [];
     for (var i = 0; i < 6; i++) this.rings.push({ tilt: rand(0.9, 1.35), rot: i * Math.PI / 6 + rand(-.1, .1), sp: rand(0.15, 0.4) * (i % 2 ? -1 : 1), r: 0.55 + i * 0.09, n: 90 });
-    this.tx = 0; this.ty = 0;
+    this.tx = 0; this.ty = 0; this.extra = 0; this.spin = 0;
   };
-  Orbits.prototype.draw = function () {
+  Orbits.prototype.burst = function () { this.spin = 1; };
+  Orbits.prototype.draw = function (k) {
     var ctx = this.ctx, w = this.w, h = this.h, t = this.t;
     ctx.clearRect(0, 0, w, h);
     var mobile = w < 760;
@@ -548,6 +658,7 @@
     var R = Math.min(w, h) * (mobile ? 0.3 : 0.36);
     var gx = this.hover ? (this.mx / w - 0.5) * 0.6 : 0, gy = this.hover ? (this.my / h - 0.5) * 0.6 : 0;
     this.tx += (gx - this.tx) * 0.05; this.ty += (gy - this.ty) * 0.05;
+    this.extra += 0.12 * this.spin * (k || 1); this.spin *= Math.pow(0.96, k || 1);
     // core
     var core = ctx.createRadialGradient(cx, cy, 0, cx, cy, R * 0.5);
     core.addColorStop(0, "rgba(255,255,255,.35)"); core.addColorStop(.3, "rgba(255,255,255,.06)"); core.addColorStop(1, "rgba(255,255,255,0)");
@@ -555,7 +666,7 @@
     ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(cx, cy, 3, 0, TAU); ctx.fill();
     for (var i = 0; i < this.rings.length; i++) {
       var rg = this.rings[i], rr = R * rg.r;
-      var tilt = rg.tilt + this.ty, rot = rg.rot + this.tx + t * 0.05;
+      var tilt = rg.tilt + this.ty, rot = rg.rot + this.tx + t * 0.05 + this.extra * (i % 2 ? -1 : 1);
       var ct = Math.cos(tilt), cr = Math.cos(rot), sr = Math.sin(rot);
       for (var j = 0; j < rg.n; j++) {
         var a = j / rg.n * TAU;
@@ -587,6 +698,7 @@
     this.shoot = null; this.nextShoot = 2;
     this.px = 0; this.py = 0;
   };
+  Starfield.prototype.burst = function (x, y) { this.shoot = { x: x + 300, y: y - 150, l: 0 }; this.flash = 1; };
   Starfield.prototype.draw = function (k) {
     var ctx = this.ctx, w = this.w, h = this.h, t = this.t;
     ctx.clearRect(0, 0, w, h);
@@ -596,10 +708,11 @@
     for (var i = 0; i < this.stars.length; i++) {
       var s = this.stars[i];
       s.x -= 0.05 * s.z * k; if (s.x < -2) s.x = w + 2;
-      ctx.globalAlpha = s.z * (0.45 + 0.55 * Math.sin(t * (1 + s.z) + s.ph)) * 0.9;
+      ctx.globalAlpha = Math.min(1, s.z * (0.45 + 0.55 * Math.sin(t * (1 + s.z) + s.ph)) * 0.9 + (this.flash || 0) * 0.5 * s.z);
       var sz = s.z * 1.6;
       ctx.fillRect(s.x + this.px * s.z, s.y + this.py * s.z, sz, sz);
     }
+    this.flash = (this.flash || 0) * Math.pow(0.95, k);
     if (!this.shoot && t > this.nextShoot) { this.shoot = { x: rand(w * .2, w), y: rand(0, h * .4), l: 0 }; }
     if (this.shoot) {
       var sh = this.shoot; sh.l += 0.025 * k;
@@ -643,6 +756,21 @@
       scenes.push(sc);
       if (io) io.observe(cv); else { sc.visible = true; }
       sc.resize();
+    });
+
+    // Tap / click anywhere on an animated section to "play" with it
+    document.addEventListener("click", function (e) {
+      if (!e.isTrusted || e.target.closest("a,button,input,textarea,select,label,.hl-secure,.ai-flip,.bd-haptic,.form,.mega,.dock")) return;
+      for (var i = 0; i < scenes.length; i++) {
+        var sc = scenes[i]; if (!sc.visible || !sc.burst) continue;
+        var r = sc.canvas.getBoundingClientRect();
+        if (e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) {
+          sc.burst(e.clientX - r.left, e.clientY - r.top);
+          Haptics.fire([14, 40, 24], true);
+          if (REDUCED) sc.frame(16);
+          break;
+        }
+      }
     });
 
     var rT;

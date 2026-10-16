@@ -125,7 +125,9 @@
             else { var s = document.createElement("span"); s.className = "w"; s.textContent = w; frag.appendChild(s); }
           });
           node.replaceChild(frag, n);
-        } else if (n.nodeType === 1) walk(n);
+        } else if (n.nodeType === 1) {
+          if (n.classList.contains("w-keep")) n.classList.add("w"); else walk(n);
+        }
       });
     };
     walk(el);
@@ -159,14 +161,63 @@
   }, { threshold: 0.4 }) : null;
   $$("[data-count]").forEach(function (el) { if (countIO && !REDUCED) { el.textContent = "0"; countIO.observe(el); } });
 
-  /* ---------- Spotlight cards ---------- */
-  $$(".stack-card, .engage-card, [data-spot]").forEach(function (el) {
-    el.addEventListener("pointermove", function (e) {
+  /* ---------- Haptics helper (engine lives in bg.js) ---------- */
+  function haptic(p) { if (window.BardiumHaptics) window.BardiumHaptics.fire(p); }
+
+  /* ---------- Spotlight cards (mouse + finger) ---------- */
+  $$(".stack-card, .engage-card, .promise-card, [data-spot]").forEach(function (el) {
+    function spot(x, y) {
       var r = el.getBoundingClientRect();
-      el.style.setProperty("--mx", (e.clientX - r.left) + "px");
-      el.style.setProperty("--my", (e.clientY - r.top) + "px");
+      el.style.setProperty("--mx", (x - r.left) + "px");
+      el.style.setProperty("--my", (y - r.top) + "px");
+    }
+    el.addEventListener("pointermove", function (e) { spot(e.clientX, e.clientY); });
+    el.addEventListener("touchmove", function (e) { var t = e.touches[0]; if (t) spot(t.clientX, t.clientY); }, { passive: true });
+    el.addEventListener("touchstart", function (e) { var t = e.touches[0]; if (t) spot(t.clientX, t.clientY); }, { passive: true });
+  });
+
+  /* ---------- "Secured" tooltip & AI→SI flip (tap on touch, hover on desktop) ---------- */
+  $$(".hl-secure").forEach(function (el) {
+    el.addEventListener("click", function (e) {
+      e.preventDefault();
+      var on = !el.classList.contains("is-tipped");
+      $$(".hl-secure.is-tipped").forEach(function (o) { o.classList.remove("is-tipped"); });
+      if (on) { el.classList.add("is-tipped"); haptic(12); clearTimeout(el.__t); el.__t = setTimeout(function () { el.classList.remove("is-tipped"); }, 2600); }
     });
   });
+  $$(".ai-flip").forEach(function (el) {
+    var toggle = function () { el.classList.toggle("is-flipped"); haptic([8, 30, 8]); };
+    el.addEventListener("click", function (e) { e.preventDefault(); toggle(); });
+    el.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); } });
+    if (!FINE && "IntersectionObserver" in window) {
+      var auto = null;
+      new IntersectionObserver(function (en) {
+        if (en[0].isIntersecting && !auto) auto = setInterval(function () { el.classList.toggle("is-flipped"); }, 2400);
+        else if (!en[0].isIntersecting && auto) { clearInterval(auto); auto = null; }
+      }, { threshold: 1 }).observe(el);
+    }
+  });
+
+  /* ---------- Touch devices: bring hover states to life while scrolling ---------- */
+  if (!FINE && "IntersectionObserver" in window) {
+    var focusIO = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) { en.target.classList.toggle("is-focus", en.isIntersecting); });
+    }, { rootMargin: "-38% 0px -38% 0px" });
+    $$(".sec-item, .step, .principle, .engage-card, .work-card, .next-card, .promise-card, .stack-card, .svc").forEach(function (el) { focusIO.observe(el); });
+
+    // tap ring + light haptic on every tap
+    document.addEventListener("pointerdown", function (e) {
+      if (e.pointerType === "mouse") return;
+      var r = document.createElement("span"); r.className = "tap-ring";
+      r.style.left = e.clientX + "px"; r.style.top = e.clientY + "px";
+      document.body.appendChild(r); setTimeout(function () { r.remove(); }, 750);
+      var hint = $(".touch-hint"); if (hint) hint.classList.add("is-gone");
+    }, { passive: true });
+    document.addEventListener("click", function (e) {
+      if (e.target.closest(".bd-haptic")) return;
+      if (e.target.closest("a, button, .chip, select, label")) haptic(10);
+    });
+  }
 
   /* ---------- Tilt ---------- */
   if (FINE && !REDUCED) {
@@ -242,7 +293,7 @@
       if (form.elements._gotcha && form.elements._gotcha.value) return; // bot
       if (!validate()) return;
       btn.disabled = true;
-      var lbl = btn.querySelectorAll(".btn__label span"); lbl.forEach(function (s) { s.textContent = "Sending…"; });
+      var lbl = btn.querySelectorAll(".btn__label span"); var orig = lbl[0].textContent; lbl.forEach(function (s) { s.textContent = "Sending…"; });
       var data = new FormData(form);
       fetch("https://formspree.io/f/" + FORMSPREE_ID, { method: "POST", body: data, headers: { Accept: "application/json" } })
         .then(function (res) {
@@ -250,12 +301,13 @@
           form.style.display = "none";
           var nm = $(".js-name", success); if (nm) nm.textContent = (form.elements.name.value || "").split(" ")[0];
           success.classList.add("is-show");
+          haptic([20, 60, 30]);
         })
         .catch(function () {
           status.textContent = "Something went wrong while sending. Please email us directly at info@bardium.in — we reply within 48 hours.";
           status.className = "form__status is-show is-error";
         })
-        .then(function () { btn.disabled = false; lbl.forEach(function (s) { s.textContent = "Send message"; }); });
+        .then(function () { btn.disabled = false; lbl.forEach(function (s) { s.textContent = orig; }); });
     });
     $$("input, textarea", form).forEach(function (el) { el.addEventListener("input", function () { var w = el.closest(".field"); if (w) w.classList.remove("has-error"); }); });
   }
