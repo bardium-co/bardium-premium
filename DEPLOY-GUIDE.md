@@ -46,11 +46,11 @@ There is **no npm, no React build and no `node_modules`**. It's pure HTML/CSS/JS
 ### 2a. Create the repository
 1. Go to **https://github.com** and sign in.
 2. Top-right, click **`+`** → **New repository**.
-3. **Repository name:** `bardium-website` (or any name you like).
+3. **Repository name:** `bardium-premium` (or any name you like).
 4. Choose **Private** (recommended) or Public.
 5. ⚠️ **Do NOT tick** "Add a README file", ".gitignore" or "license". Leave the repository empty.
 6. Click the green **Create repository** button.
-7. Copy the URL at the top (it looks like `https://github.com/YOUR-NAME/bardium-website`) and **send it to Claude**. Claude will push the code for you.
+7. Copy the URL at the top (it looks like `https://github.com/iamanshaikh/bardium-premium`) and **send it to Claude**. Claude will push the code for you.
 
 ### 2b. (Only if you want to upload it yourself instead)
 1. On the empty repository page, click the link **"uploading an existing file"**.
@@ -69,8 +69,8 @@ Your domain **bardium.in is already connected to your existing Netlify site**. T
 2. Click your existing site (the one showing `bardium.in`).
 3. Left menu: **Site configuration** → **Build & deploy** → **Continuous deployment**.
 4. Under **Repository**, click **Link repository** (or **Manage repository → Link to a different repository**).
-5. Choose **GitHub**. If asked, click **Authorize Netlify** and allow access to the `bardium-website` repo.
-6. Pick the **bardium-website** repository.
+5. Choose **GitHub**. If asked, click **Authorize Netlify** and allow access to the `bardium-premium` repo.
+6. Pick the **bardium-premium** repository.
 7. Build settings: fill them in exactly like this:
    - **Branch to deploy:** `main`
    - **Base directory:** *(leave empty)*
@@ -82,7 +82,7 @@ Your domain **bardium.in is already connected to your existing Netlify site**. T
 
 ### Option B: create a brand-new Netlify site
 1. In Netlify, click **Add new site** → **Import an existing project** → **Deploy with GitHub**.
-2. Pick `bardium-website`. Use the same build settings as step 7 above, then click **Deploy**.
+2. Pick `bardium-premium`. Use the same build settings as step 7 above, then click **Deploy**.
 3. You'll get a temporary address like `random-name-123.netlify.app`. Open it to check the site.
 4. Move the domain over:
    - On the **old** site: **Domain management** → next to `bardium.in` click **Options → Remove domain** (do the same for `www.bardium.in`).
