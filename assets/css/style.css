@@ -1070,3 +1070,12 @@ a.work-card__visual { color: inherit; cursor: pointer; }
 .phone--shot .phone__screen { background: #0d0d0d; }
 .phone--shot .phone__screen img { width: 100%; height: 100%; object-fit: cover; object-position: top center; display: block; }
 a.work-card__visual:focus-visible { outline: 2px solid #fff; outline-offset: -6px; }
+
+/* Browser-window mockup (website projects) */
+.browser { position: relative; z-index: 1; width: min(100%, 440px); border-radius: 16px; overflow: hidden; background: #0b0b0b; border: 1px solid #333; box-shadow: 0 60px 120px -30px rgba(0,0,0,.95); transition: transform 1s var(--ease); }
+.work-card:hover .browser, .work-card.is-focus .browser { transform: translateY(-10px) rotate(-1deg); }
+.browser__bar { display: flex; align-items: center; gap: 6px; padding: 11px 14px; background: #161616; border-bottom: 1px solid var(--line); }
+.browser__bar i { width: 9px; height: 9px; border-radius: 50%; background: #3a3a3a; }
+.browser__bar span { margin-left: 10px; flex: 1; font-size: 11px; color: var(--muted); background: #0b0b0b; border-radius: 20px; padding: 4px 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.browser__img { display: block; width: 100%; height: auto; }
+@media (max-width: 560px) { .browser { width: 92%; } }

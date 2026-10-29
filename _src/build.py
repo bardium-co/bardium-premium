@@ -315,6 +315,12 @@ SKYLINE_URL = "https://skyline-brief-web.onrender.com"
 def phone_skyline():
     return '<div class="phone phone--shot" aria-hidden="true"><div class="phone__screen"><img src="{P}assets/img/skyline-brief-app.webp" alt="" width="390" height="844" loading="lazy" decoding="async"></div></div>'
 
+MAHARAJA_URL = "https://maharajasharptools.in"
+EXTERNAL = {"skyline": (SKYLINE_URL, "Skyline Brief"), "maharaja": (MAHARAJA_URL, "Maharaja Sharp Tools")}
+
+def browser_maharaja():
+    return '''<div class="browser" aria-hidden="true"><div class="browser__bar"><i></i><i></i><i></i><span>maharajasharptools.in</span></div><img class="browser__img" src="{P}assets/img/maharaja-sharp-tools-site.webp" alt="" width="1100" height="688" loading="lazy" decoding="async"></div>'''
+
 def chip_float(cls, ico, title, sub):
     return f'<div class="float-chip {cls}" aria-hidden="true"><span class="float-chip__ic">{icon(ico)}</span><span>{title}<small>{sub}</small></span></div>'
 
@@ -322,6 +328,8 @@ ABUDI_FEATURES = ["Scan a table QR — full menu in seconds", "Orders hit the ki
 LOUNGE_FEATURES = ["Bilingual menu — English &amp; Arabic", "Live Kitchen Order Tickets (KOT)", "Flight, seat &amp; name on every order", "Live status: accepted → served", "Guest feedback on the dashboard", "Secure per-staff login accounts"]
 
 SKYLINE_FEATURES = ["Every story checked against its original source", "Clear labels: confirmed, reported or community", "English &amp; Arabic, with full right-to-left layout", "Light and dark modes", "Alerts for the topics you follow", "Credit and a link to every original source"]
+
+MAHARAJA_FEATURES = ["Full product catalogue, easy to browse", "Quote and WhatsApp buttons on every page", "Quick search to find any product", "Clean, professional look for a trade brand", "Works on any phone or computer", "Secured with HTTPS"]
 
 def work_card(kind, detailed=False):
     if kind == "abudi":
@@ -334,6 +342,11 @@ def work_card(kind, detailed=False):
         tag, title, lead = "AI News App · Dubai Real Estate", "Skyline<br>Brief", "A mobile app that brings trusted Dubai real estate news into one clean feed. Every fact is checked against the original source, every story shows how well it is sourced, and it reads beautifully in English and Arabic."
         feats = SKYLINE_FEATURES
         chips = ["AI-curated", "Verified sources", "Bilingual", "Secured from day one"]
+    elif kind == "maharaja":
+        visual = browser_maharaja() + chip_float("float-chip--a", "bell", "Get a quote", "One tap") + chip_float("float-chip--b", "lock", "Secured", "HTTPS everywhere")
+        tag, title, lead = "Business Website · Cutting Tools", "Maharaja<br>Sharp Tools", "A clean, professional website for a Bengaluru supplier of precision cutting tools. Customers can browse the full range, then ask for a quote or message on WhatsApp in one tap."
+        feats = MAHARAJA_FEATURES
+        chips = ["Product catalogue", "Quote &amp; WhatsApp", "Mobile friendly", "Secured by default"]
     else:
         visual = phone_lounge() + chip_float("float-chip--a", "lang", "English · العربية", "One-tap switch") + chip_float("float-chip--b", "lock", "Staff login", "Per-user accounts")
         tag, title, lead = "Luxury Lounge Ordering &amp; KOT", "Doha Airport<br>Lounge", "A premium bilingual ordering and kitchen management system for a luxury airport lounge in Doha. Guests order from their seat; staff run every ticket on a real-time kitchen screen."
@@ -342,14 +355,14 @@ def work_card(kind, detailed=False):
     fl = "".join(f"<li>{f}</li>" for f in (feats if detailed else feats[:4]))
     ch = "".join(f'<span class="chip">{c}</span>' for c in chips)
     more = "" if detailed else f'<a class="link-arrow" href="{{P}}work.html#{kind}">Read the case study {icon("arrow")}</a>'
-    if kind == "skyline":
-        more = f'<a class="link-arrow" href="{SKYLINE_URL}" target="_blank" rel="noopener noreferrer">View the project {icon("arrow")}</a>'
+    if kind in EXTERNAL:
+        more = f'<a class="link-arrow" href="{EXTERNAL[kind][0]}" target="_blank" rel="noopener noreferrer">{"Visit the website" if kind == "maharaja" else "View the project"} {icon("arrow")}</a>'
     extra_detail = ""
     if detailed:
         extra_detail = f'<div><p class="eyebrow">Results</p></div><div class="chips">{ch}</div>'
-    if kind == "skyline":
-        vis = f'<a class="work-card__visual" href="{SKYLINE_URL}" target="_blank" rel="noopener noreferrer" data-cursor="Open" aria-label="Open the Skyline Brief project (opens in a new tab)">{visual}</a>'
-        tagline = f'<span class="work-card__tag">Featured · {tag}</span>'
+    if kind in EXTERNAL:
+        vis = f'<a class="work-card__visual" href="{EXTERNAL[kind][0]}" target="_blank" rel="noopener noreferrer" data-cursor="Open" aria-label="Open {EXTERNAL[kind][1]} (opens in a new tab)">{visual}</a>'
+        tagline = f'<span class="work-card__tag">{"Live" if kind == "maharaja" else "Featured"} · {tag}</span>'
     else:
         vis = f'<div class="work-card__visual" data-cursor="Live">{visual}</div>'
         tagline = f'<span class="work-card__tag"><span class="live-dot"></span> Live · {tag}</span>'
@@ -438,6 +451,7 @@ def build_home():
       {work_card("abudi")}
       {work_card("lounge")}
       {work_card("skyline")}
+      {work_card("maharaja")}
       {NEXT_CARD}
     </div>
   </div>
@@ -584,6 +598,7 @@ def build_work():
       {work_card("abudi", True)}
       {work_card("lounge", True)}
       {work_card("skyline", True)}
+      {work_card("maharaja", True)}
       {NEXT_CARD}
     </div>
   </div>
