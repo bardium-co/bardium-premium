@@ -310,7 +310,7 @@ def phone_lounge():
   <div class="ui-cta"><span>Status · Preparing</span><span>●</span></div>
 </div></div>'''
 
-SKYLINE_URL = "https://github.com/bardium-co/dubai-real-estate-ai"
+SKYLINE_URL = "https://skyline-brief-web.onrender.com"
 
 def phone_skyline():
     return '<div class="phone phone--shot" aria-hidden="true"><div class="phone__screen"><img src="{P}assets/img/skyline-brief-app.webp" alt="" width="390" height="844" loading="lazy" decoding="async"></div></div>'
