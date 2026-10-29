@@ -310,11 +310,18 @@ def phone_lounge():
   <div class="ui-cta"><span>Status · Preparing</span><span>●</span></div>
 </div></div>'''
 
+SKYLINE_URL = "https://github.com/bardium-co/dubai-real-estate-ai"
+
+def phone_skyline():
+    return '<div class="phone phone--shot" aria-hidden="true"><div class="phone__screen"><img src="{P}assets/img/skyline-brief-app.webp" alt="" width="390" height="844" loading="lazy" decoding="async"></div></div>'
+
 def chip_float(cls, ico, title, sub):
     return f'<div class="float-chip {cls}" aria-hidden="true"><span class="float-chip__ic">{icon(ico)}</span><span>{title}<small>{sub}</small></span></div>'
 
 ABUDI_FEATURES = ["Scan a table QR — full menu in seconds", "Orders hit the kitchen instantly", "Staff dashboard to accept &amp; complete", "Automatic bills — print or on-screen", "Menu updates in seconds", "Works on any smartphone"]
 LOUNGE_FEATURES = ["Bilingual menu — English &amp; Arabic", "Live Kitchen Order Tickets (KOT)", "Flight, seat &amp; name on every order", "Live status: accepted → served", "Guest feedback on the dashboard", "Secure per-staff login accounts"]
+
+SKYLINE_FEATURES = ["Every story checked against its original source", "Clear labels: confirmed, reported or community", "English &amp; Arabic, with full right-to-left layout", "Light and dark modes", "Alerts for the topics you follow", "Credit and a link to every original source"]
 
 def work_card(kind, detailed=False):
     if kind == "abudi":
@@ -322,6 +329,11 @@ def work_card(kind, detailed=False):
         tag, title, lead = "QR Table Ordering System", "Abudi<br>Coffee Roasters", "A digital ordering system for a specialty coffee house. Guests scan a QR code at their table, browse the full menu on their phone and order in seconds — no waiting, no paper menus."
         feats = ABUDI_FEATURES
         chips = ["Faster service", "Zero paper menus", "Fewer errors", "Live kitchen"]
+    elif kind == "skyline":
+        visual = phone_skyline() + chip_float("float-chip--a", "check", "Confirmed", "Sources checked") + chip_float("float-chip--b", "lang", "English · العربية", "One-tap switch")
+        tag, title, lead = "AI News App · Dubai Real Estate", "Skyline<br>Brief", "A mobile app that brings trusted Dubai real estate news into one clean feed. Every fact is checked against the original source, every story shows how well it is sourced, and it reads beautifully in English and Arabic."
+        feats = SKYLINE_FEATURES
+        chips = ["AI-curated", "Verified sources", "Bilingual", "Secured from day one"]
     else:
         visual = phone_lounge() + chip_float("float-chip--a", "lang", "English · العربية", "One-tap switch") + chip_float("float-chip--b", "lock", "Staff login", "Per-user accounts")
         tag, title, lead = "Luxury Lounge Ordering &amp; KOT", "Doha Airport<br>Lounge", "A premium bilingual ordering and kitchen management system for a luxury airport lounge in Doha. Guests order from their seat; staff run every ticket on a real-time kitchen screen."
@@ -330,13 +342,21 @@ def work_card(kind, detailed=False):
     fl = "".join(f"<li>{f}</li>" for f in (feats if detailed else feats[:4]))
     ch = "".join(f'<span class="chip">{c}</span>' for c in chips)
     more = "" if detailed else f'<a class="link-arrow" href="{{P}}work.html#{kind}">Read the case study {icon("arrow")}</a>'
+    if kind == "skyline":
+        more = f'<a class="link-arrow" href="{SKYLINE_URL}" target="_blank" rel="noopener noreferrer">View the project {icon("arrow")}</a>'
     extra_detail = ""
     if detailed:
         extra_detail = f'<div><p class="eyebrow">Results</p></div><div class="chips">{ch}</div>'
+    if kind == "skyline":
+        vis = f'<a class="work-card__visual" href="{SKYLINE_URL}" target="_blank" rel="noopener noreferrer" data-cursor="Open" aria-label="Open the Skyline Brief project (opens in a new tab)">{visual}</a>'
+        tagline = f'<span class="work-card__tag">Featured · {tag}</span>'
+    else:
+        vis = f'<div class="work-card__visual" data-cursor="Live">{visual}</div>'
+        tagline = f'<span class="work-card__tag"><span class="live-dot"></span> Live · {tag}</span>'
     return f'''<article class="work-card" id="{kind}" data-reveal>
-  <div class="work-card__visual" data-cursor="Live">{visual}</div>
+  {vis}
   <div class="work-card__body">
-    <span class="work-card__tag"><span class="live-dot"></span> Live · {tag}</span>
+    {tagline}
     <h3>{title}</h3>
     <p>{lead}</p>
     <ul class="feature-list">{fl}</ul>
@@ -417,6 +437,7 @@ def build_home():
     <div class="work-list">
       {work_card("abudi")}
       {work_card("lounge")}
+      {work_card("skyline")}
       {NEXT_CARD}
     </div>
   </div>
@@ -562,6 +583,7 @@ def build_work():
     <div class="work-list">
       {work_card("abudi", True)}
       {work_card("lounge", True)}
+      {work_card("skyline", True)}
       {NEXT_CARD}
     </div>
   </div>
@@ -570,7 +592,7 @@ def build_work():
 {cta_section("Your story,", "built next.", "tunnel")}
 '''
     page("work.html", "work", "Our Work — Live Projects &amp; Case Studies | Bardium",
-         "Case studies from Bardium: a QR table ordering system for Abudi Coffee Roasters and a bilingual luxury lounge ordering and KOT system in Doha.", body)
+         "Case studies from Bardium: a QR table ordering system for Abudi Coffee Roasters a bilingual luxury lounge ordering and KOT system in Doha, and Skyline Brief, an AI news app for Dubai real estate.", body)
 
 # ================================================================= SECURITY
 def build_security():
