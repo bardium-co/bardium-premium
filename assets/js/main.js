@@ -161,20 +161,8 @@
   }, { threshold: 0.4 }) : null;
   $$("[data-count]").forEach(function (el) { if (countIO && !REDUCED) { el.textContent = "0"; countIO.observe(el); } });
 
-  /* ---------- Haptics helper (engine lives in bg.js) ---------- */
-  function haptic(p) { if (window.BardiumHaptics) window.BardiumHaptics.fire(p); }
-
-  /* ---------- Spotlight cards (mouse + finger) ---------- */
-  $$(".stack-card, .engage-card, .promise-card, [data-spot]").forEach(function (el) {
-    function spot(x, y) {
-      var r = el.getBoundingClientRect();
-      el.style.setProperty("--mx", (x - r.left) + "px");
-      el.style.setProperty("--my", (y - r.top) + "px");
-    }
-    el.addEventListener("pointermove", function (e) { spot(e.clientX, e.clientY); });
-    el.addEventListener("touchmove", function (e) { var t = e.touches[0]; if (t) spot(t.clientX, t.clientY); }, { passive: true });
-    el.addEventListener("touchstart", function (e) { var t = e.touches[0]; if (t) spot(t.clientX, t.clientY); }, { passive: true });
-  });
+  /* ---------- Haptics: switched off ---------- */
+  function haptic() { /* haptics are switched off */ }
 
   /* ---------- "Secured" tooltip & AI→SI flip (tap on touch, hover on desktop) ---------- */
   $$(".hl-secure").forEach(function (el) {
@@ -197,74 +185,6 @@
       }, { threshold: 1 }).observe(el);
     }
   });
-
-  /* ---------- Touch devices: bring hover states to life while scrolling ---------- */
-  if (!FINE && "IntersectionObserver" in window) {
-    var focusIO = new IntersectionObserver(function (entries) {
-      entries.forEach(function (en) { en.target.classList.toggle("is-focus", en.isIntersecting); });
-    }, { rootMargin: "-38% 0px -38% 0px" });
-    $$(".sec-item, .step, .principle, .engage-card, .work-card, .next-card, .promise-card, .stack-card, .svc").forEach(function (el) { focusIO.observe(el); });
-
-    // tap ring + light haptic on every tap
-    document.addEventListener("pointerdown", function (e) {
-      if (e.pointerType === "mouse") return;
-      var r = document.createElement("span"); r.className = "tap-ring";
-      r.style.left = e.clientX + "px"; r.style.top = e.clientY + "px";
-      document.body.appendChild(r); setTimeout(function () { r.remove(); }, 750);
-      var hint = $(".touch-hint"); if (hint) hint.classList.add("is-gone");
-    }, { passive: true });
-    document.addEventListener("click", function (e) {
-      if (e.target.closest(".bd-haptic")) return;
-      if (e.target.closest("a, button, .chip, select, label")) haptic(10);
-    });
-  }
-
-  /* ---------- Tilt ---------- */
-  if (FINE && !REDUCED) {
-    $$("[data-tilt]").forEach(function (el) {
-      el.addEventListener("pointermove", function (e) {
-        var r = el.getBoundingClientRect(), x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5;
-        el.style.transform = "perspective(1000px) rotateY(" + (x * 10) + "deg) rotateX(" + (-y * 10) + "deg)";
-      });
-      el.addEventListener("pointerleave", function () { el.style.transform = ""; });
-    });
-  }
-
-  /* ---------- Magnetic buttons ---------- */
-  if (FINE && !REDUCED) {
-    $$(".btn, .round-arrow, .magnetic").forEach(function (el) {
-      el.addEventListener("pointermove", function (e) {
-        var r = el.getBoundingClientRect();
-        var x = e.clientX - r.left - r.width / 2, y = e.clientY - r.top - r.height / 2;
-        el.style.transform = "translate(" + x * 0.22 + "px," + y * 0.3 + "px)";
-      });
-      el.addEventListener("pointerleave", function () { el.style.transform = ""; });
-    });
-  }
-
-  /* ---------- Custom cursor ---------- */
-  if (FINE && !REDUCED) {
-    var dot = $(".cursor"), ring = $(".cursor-ring"), label = $(".cursor-ring__label");
-    if (dot && ring) {
-      document.body.classList.add("has-cursor");
-      var mx = -100, my = -100, rx = -100, ry = -100;
-      window.addEventListener("pointermove", function (e) { mx = e.clientX; my = e.clientY; dot.style.transform = "translate(" + mx + "px," + my + "px)"; }, { passive: true });
-      (function follow() {
-        rx += (mx - rx) * 0.16; ry += (my - ry) * 0.16;
-        ring.style.transform = "translate(" + rx + "px," + ry + "px)";
-        requestAnimationFrame(follow);
-      })();
-      document.addEventListener("pointerover", function (e) {
-        var v = e.target.closest("[data-cursor]");
-        var h = e.target.closest("a, button, .chip, label, select");
-        ring.classList.toggle("is-view", !!v);
-        if (v && label) label.textContent = v.getAttribute("data-cursor") || "View";
-        ring.classList.toggle("is-hover", !v && !!h);
-      });
-      document.addEventListener("pointerleave", function () { dot.classList.add("is-hidden"); ring.classList.add("is-hidden"); });
-      document.addEventListener("pointerenter", function () { dot.classList.remove("is-hidden"); ring.classList.remove("is-hidden"); });
-    }
-  }
 
   /* ---------- Year ---------- */
   $$("[data-year]").forEach(function (el) { el.textContent = new Date().getFullYear(); });

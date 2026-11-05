@@ -1079,3 +1079,11 @@ a.work-card__visual:focus-visible { outline: 2px solid #fff; outline-offset: -6p
 .browser__bar span { margin-left: 10px; flex: 1; font-size: 11px; color: var(--muted); background: #0b0b0b; border-radius: 20px; padding: 4px 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .browser__img { display: block; width: 100%; height: auto; }
 @media (max-width: 560px) { .browser { width: 92%; } }
+
+/* Calm mode: no hover/touch movement. Animations play on their own; links and buttons keep simple feedback. */
+.work-card:hover .phone, .work-card:hover .browser,
+.principle:hover, .engage-card:hover, .promise-card:hover,
+.promise-card:hover .promise-card__ic, .caps li:hover,
+.next-card:hover .round-arrow, .brand:hover .brand__mark { transform: none; }
+.principle:hover { box-shadow: none; }
+.touch-hint, .tap-ring, .cursor, .cursor-ring { display: none !important; }

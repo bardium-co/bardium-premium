@@ -407,7 +407,6 @@ def build_home():
       <div class="btn-row" data-reveal data-delay=".35">{btn("Get a free quote", "contact.html")}{btn("See our work", "work.html", "btn--ghost")}</div>
       <div data-reveal data-delay=".45">{trust_row()}</div>
     </div>
-    <p class="touch-hint" aria-hidden="true"><span class="touch-hint__dot"></span>Tap · drag · tilt to play</p>
   </div>
   <div class="hero__meta">
     <div class="container">

@@ -14,65 +14,11 @@
 
   var IS_TOUCH = (window.matchMedia && window.matchMedia("(hover: none), (pointer: coarse)").matches) || ("ontouchstart" in window);
 
-  /* ---------- Haptics: Android vibration + iOS (Safari 18+) switch haptic ---------- */
-  var Haptics = (function () {
-    var last = 0, sw = null, lbl = null;
-    var canVib = typeof navigator.vibrate === "function";
-    function ios() {
-      if (!lbl) {
-        sw = document.createElement("input"); sw.type = "checkbox"; sw.setAttribute("switch", ""); sw.id = "bd-haptic-sw";
-        sw.className = "bd-haptic"; sw.tabIndex = -1; sw.setAttribute("aria-hidden", "true");
-        lbl = document.createElement("label"); lbl.htmlFor = "bd-haptic-sw"; lbl.className = "bd-haptic"; lbl.setAttribute("aria-hidden", "true");
-        document.body.appendChild(sw); document.body.appendChild(lbl);
-      }
-      lbl.click(); if (sw.blur) sw.blur();
-    }
-    return {
-      fire: function (pattern, force) {
-        if (!IS_TOUCH || REDUCED) return;
-        var now = performance.now(); if (!force && now - last < 45) return; last = now;
-        try { if (canVib) navigator.vibrate(pattern); else ios(); } catch (e) { /* not supported */ }
-      }
-    };
-  })();
+  /* Haptics, touch, hover and tilt reactions are switched off: the animations just play on their own. */
+  var Haptics = { fire: function () {} };
   window.BardiumHaptics = Haptics;
-
-  /* ---------- Pointer (mouse + finger) ---------- */
   var pointer = { x: -9999, y: -9999, active: false, touch: false };
-  var releaseT;
-  window.addEventListener("pointermove", function (e) {
-    pointer.x = e.clientX; pointer.y = e.clientY; pointer.active = true; pointer.touch = e.pointerType !== "mouse";
-  }, { passive: true });
-  function touchAt(t) { pointer.x = t.clientX; pointer.y = t.clientY; pointer.active = true; pointer.touch = true; clearTimeout(releaseT); }
-  window.addEventListener("touchstart", function (e) { if (e.touches[0]) touchAt(e.touches[0]); }, { passive: true });
-  window.addEventListener("touchmove", function (e) { if (e.touches[0]) touchAt(e.touches[0]); }, { passive: true });
-  window.addEventListener("touchend", function () { releaseT = setTimeout(function () { pointer.active = false; pointer.touch = false; }, 900); }, { passive: true });
-  document.addEventListener("pointerleave", function () { if (!pointer.touch) pointer.active = false; });
-  window.addEventListener("blur", function () { pointer.active = false; });
-
-  /* ---------- Tilt (gyroscope) on phones & tablets ---------- */
   var tilt = { x: 0, y: 0, on: false };
-  function onOrient(e) {
-    if (e.gamma == null || e.beta == null) return;
-    var ang = (screen.orientation && screen.orientation.angle) || window.orientation || 0;
-    var gx = e.gamma, by = e.beta - 40;
-    if (Math.abs(ang) === 90) { gx = ang === 90 ? e.beta : -e.beta; by = (ang === 90 ? -e.gamma : e.gamma) - 30; }
-    gx = Math.max(-1, Math.min(1, gx / 22)); by = Math.max(-1, Math.min(1, by / 22));
-    tilt.x += (gx - tilt.x) * 0.18; tilt.y += (by - tilt.y) * 0.18; tilt.on = true;
-  }
-  if (IS_TOUCH && !REDUCED && "DeviceOrientationEvent" in window) {
-    if (typeof DeviceOrientationEvent.requestPermission !== "function") {
-      window.addEventListener("deviceorientation", onOrient);
-    } else {
-      var asked = false;
-      document.addEventListener("click", function (e) {
-        if (asked || !e.isTrusted || e.target.closest("a,button,input,textarea,select,label,.hl-secure,.ai-flip")) return;
-        if (!e.target.closest("section")) return;
-        asked = true;
-        DeviceOrientationEvent.requestPermission().then(function (st) { if (st === "granted") window.addEventListener("deviceorientation", onOrient); }).catch(function () {});
-      });
-    }
-  }
 
   /* ---------- Simplex-ish noise (compact 3D value-gradient noise) ---------- */
   var perm = new Uint8Array(512);
@@ -756,21 +702,6 @@
       scenes.push(sc);
       if (io) io.observe(cv); else { sc.visible = true; }
       sc.resize();
-    });
-
-    // Tap / click anywhere on an animated section to "play" with it
-    document.addEventListener("click", function (e) {
-      if (!e.isTrusted || e.target.closest("a,button,input,textarea,select,label,.hl-secure,.ai-flip,.bd-haptic,.form,.mega,.dock")) return;
-      for (var i = 0; i < scenes.length; i++) {
-        var sc = scenes[i]; if (!sc.visible || !sc.burst) continue;
-        var r = sc.canvas.getBoundingClientRect();
-        if (e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) {
-          sc.burst(e.clientX - r.left, e.clientY - r.top);
-          Haptics.fire([14, 40, 24], true);
-          if (REDUCED) sc.frame(16);
-          break;
-        }
-      }
     });
 
     var rT;
