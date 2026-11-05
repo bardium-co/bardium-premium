@@ -163,7 +163,7 @@ def header(page):
     def nl(key, href, label):
         return f'<li class="nav__item"><a class="nav__link" data-nav="{key}" href="{href}">{label}</a></li>'
     dock = [("home", "index.html", "home", "Home"), ("services", "services.html", "grid", "Services"),
-            ("work", "work.html", "case", "Work"), ("security", "security.html", "shield", "Security"),
+            ("work", "work.html", "case", "Work"), ("pos", "pos.html", "cart", "POS"), ("security", "security.html", "shield", "Security"),
             ("contact", "contact.html", "mail", "Contact")]
     dock_html = "".join(f'<a class="dock__link" data-nav="{k}" href="{{P}}{h}">{icon(i)}<span>{l}</span></a>' for k, h, i, l in dock)
     return f'''<body data-page="{page}">
@@ -193,6 +193,7 @@ def header(page):
           {mega()}
         </li>
         {nl("work", "{P}work.html", "Our Work")}
+        {nl("pos", "{P}pos.html", "Bardium POS")}
         {nl("security", "{P}security.html", "Security")}
         {nl("process", "{P}index.html#process", "How We Work")}
         {nl("contact", "{P}contact.html", "Contact")}
@@ -226,6 +227,7 @@ def footer():
         <h4>Company</h4>
         <ul>
           <li><a href="{{P}}work.html">Our Work</a></li>
+          <li><a href="{{P}}pos.html">Bardium POS</a></li>
           <li><a href="{{P}}security.html">Security</a></li>
           <li><a href="{{P}}index.html#process">How We Work</a></li>
           <li><a href="{{P}}contact.html">Contact</a></li>
@@ -258,15 +260,15 @@ def footer():
 </html>
 '''
 
-def cta_section(title_a="Let's build", title_b="something unforgettable.", canvas="tunnel"):
+def cta_section(title_a="Let's build", title_b="something unforgettable.", canvas="tunnel", lead="Tell us what you're imagining. A free discovery call, a fixed quote within 48 hours — and zero obligation.", primary=("Get a free quote", "{P}contact.html")):
     return f'''
 <section class="section cta fade-top" aria-label="Start a project">
   <canvas class="bg-canvas" data-bg="{canvas}" aria-hidden="true"></canvas>
   <div class="container cta__inner">
     <span class="eyebrow" data-reveal>Your move</span>
     <h2 class="display cta__title" data-split>{title_a}<br><span class="serif">{title_b}</span></h2>
-    <p class="lead" data-reveal data-delay=".2">Tell us what you're imagining. A free discovery call, a fixed quote within 48 hours — and zero obligation.</p>
-    <div class="btn-row" data-reveal data-delay=".3">{btn("Get a free quote", "{P}contact.html")}<a class="btn btn--ghost" href="{WA}" target="_blank" rel="noopener"><span class="btn__label"><span>Chat on WhatsApp</span><span aria-hidden="true">Chat on WhatsApp</span></span>{icon("wa", "btn__arrow btn__arrow--static")}</a></div>
+    <p class="lead" data-reveal data-delay=".2">{lead}</p>
+    <div class="btn-row" data-reveal data-delay=".3">{btn(primary[0], primary[1])}<a class="btn btn--ghost" href="{WA}" target="_blank" rel="noopener"><span class="btn__label"><span>Chat on WhatsApp</span><span aria-hidden="true">Chat on WhatsApp</span></span>{icon("wa", "btn__arrow btn__arrow--static")}</a></div>
     {trust_row("trust-row--center")}
   </div>
 </section>'''
@@ -579,6 +581,154 @@ def build_services():
     page("services.html", "services", "What We Do — Websites, Software, Apps &amp; E-Commerce | Bardium",
          "Bespoke website design, custom software, web and mobile applications, e-commerce, revamps and secured maintenance by Bardium — any software, for any business.", body)
 
+
+# ================================================================= BARDIUM POS
+POS_DEMO = "https://wa.me/919972782952?text=Hi%20Bardium%2C%20I%27d%20like%20a%20live%20demo%20of%20Bardium%20POS."
+
+POS_MODULES = [
+ ("cart", "Counter billing", "Quick billing on a Windows computer. Add items, apply offers and close the bill in seconds."),
+ ("phone", "Waiter phones", "Waiters take orders on an Android phone and send them straight to the kitchen."),
+ ("bell", "Kitchen tickets (KOT)", "Every order shows up on the kitchen screen as a live ticket. No shouting, no lost paper."),
+ ("qr", "QR table ordering", "Guests scan the table QR, browse the menu and order. They sign in with WhatsApp or Google, see recent orders and pay."),
+ ("approve", "UPI payments", "Simple UPI payments for guests and staff, without the fuss of a heavy payment-gateway setup."),
+ ("gift", "Loyalty &amp; offers", "A loyalty programme and marketing campaigns, set up and run for you by Bardium."),
+ ("globe", "Your look, your menu", "Your menu, your name, your colours. Pick a theme that suits your restaurant or café."),
+ ("eye", "Clear reports", "See what sells, what is slow and when you are busiest, all in one place."),
+]
+
+POS_STEPS = [
+ ("01", "Meet &amp; understand", "We learn how your restaurant or café really works: tables, menu, staff and the way you serve."),
+ ("02", "Theme &amp; set up", "We set up your menu and give your POS your own name, colours and look."),
+ ("03", "Train &amp; go live", "We train your team on the counter, the waiter phones and the kitchen screen, then go live with you."),
+ ("04", "Support &amp; grow", "Updates, support and security stay with us, and we help you grow with loyalty offers."),
+]
+
+POS_CHECKS = [
+ ("Each restaurant's data stays separate", "Your menu, orders and customers are never mixed with anyone else's."),
+ ("Staff sign in with their own login", "Every person has their own credentials, and sees only what their role needs."),
+ ("Encrypted connection", "Everything travels over HTTPS, so data between screens and the server cannot be read."),
+ ("Customer privacy done properly", "Sign-in, consent and data rules are handled carefully and checked with a lawyer."),
+ ("Backups and safe updates", "Your data is backed up, and updates go live without breaking your service."),
+ ("Secured by default", "Security is part of the product from day one, at no extra cost."),
+]
+
+def pos_counter():
+    tiles = "".join(f'<span class="posui__tile"><i></i>{n}</span>' for n in ["Filter Coffee", "Masala Dosa", "Veg Biryani", "Paneer Tikka", "Cold Coffee", "Brownie"])
+    return f'''<div class="browser pos-counter" aria-hidden="true"><div class="browser__bar"><i></i><i></i><i></i><span>Bardium POS · Counter</span></div>
+  <div class="posui"><div class="posui__menu"><div class="posui__tabs"><b>All</b><span>Hot</span><span>Cold</span><span>Snacks</span></div><div class="posui__tiles">{tiles}</div></div>
+  <div class="posui__bill"><div class="posui__h">Table 07</div>
+    <div class="posui__row"><span>Filter Coffee</span><em>×2</em></div><div class="posui__row"><span>Masala Dosa</span><em>×1</em></div><div class="posui__row"><span>Brownie</span><em>×1</em></div>
+    <div class="posui__pay">Pay by UPI</div></div></div></div>'''
+
+def pos_waiter():
+    return f'''<div class="phone phone--dark" aria-hidden="true"><div class="phone__screen"><span class="phone__notch"></span>
+  <div class="ui-top"><div class="ui-kicker">Waiter · Table 07</div><div class="ui-title">New<br>order</div></div>
+  <div class="ui-tabs"><span class="ui-tab is-on">Starters</span><span class="ui-tab">Mains</span><span class="ui-tab">Drinks</span></div>
+  <div class="ui-list">
+    <div class="ui-item"><span class="ui-thumb"></span><div><div class="ui-name">Paneer Tikka</div><div class="ui-sub">Less spicy</div></div><span class="ui-add">+</span></div>
+    <div class="ui-item"><span class="ui-thumb"></span><div><div class="ui-name">Masala Dosa</div><div class="ui-sub">Extra chutney</div></div><span class="ui-add">+</span></div>
+    <div class="ui-item"><span class="ui-thumb"></span><div><div class="ui-name">Filter Coffee</div><div class="ui-sub">Strong</div></div><span class="ui-add">+</span></div>
+  </div>
+  <div class="ui-cta"><span>Send to kitchen</span><span>→</span></div>
+</div></div>'''
+
+def pos_guest():
+    return f'''<div class="phone" aria-hidden="true"><div class="phone__screen"><span class="phone__notch"></span>
+  <div class="ui-top"><div class="ui-kicker">Table 07 · Scan &amp; order</div><div class="ui-title">Your<br>Restaurant</div></div>
+  <div class="ui-tabs"><span class="ui-tab is-on">Popular</span><span class="ui-tab">Meals</span><span class="ui-tab">Sweets</span></div>
+  <div class="ui-list">
+    <div class="ui-item"><span class="ui-thumb"></span><div><div class="ui-name">Veg Biryani</div><div class="ui-sub">Served with raita</div></div><span class="ui-add">+</span></div>
+    <div class="ui-item"><span class="ui-thumb ui-thumb--b"></span><div><div class="ui-name">Cold Coffee</div><div class="ui-sub">With ice cream</div></div><span class="ui-add">+</span></div>
+    <div class="ui-item"><span class="ui-thumb ui-thumb--c"></span><div><div class="ui-name">Brownie</div><div class="ui-sub">Warm, fresh</div></div><span class="ui-add">+</span></div>
+  </div>
+  <div class="ui-cta"><span>Pay by UPI</span><span>→</span></div>
+</div></div>'''
+
+def build_pos():
+    mods = "".join(f'''<div class="sec-item" data-reveal data-delay="{(i%3)*0.08:.2f}"><div class="sec-item__icon">{icon(m[0])}</div><h3>{m[1]}</h3><p>{m[2]}</p></div>''' for i, m in enumerate(POS_MODULES))
+    steps = "".join(f'''<div class="step" data-reveal data-delay="{i*0.1:.1f}"><div class="step__num">{n}</div><h3>{t}</h3><p>{d}</p></div>''' for i, (n, t, d) in enumerate(POS_STEPS))
+    cl = "".join(f'<li data-reveal><span class="tick">{icon("check")}</span><div><strong>{a}</strong><span class="d">{b}</span></div></li>' for a, b in POS_CHECKS)
+    body = f'''
+<section class="page-hero" aria-label="Bardium POS">
+  <canvas class="bg-canvas" data-bg="network" aria-hidden="true"></canvas>
+  <div class="container page-hero__content">
+    <nav class="breadcrumb" aria-label="Breadcrumb"><a href="index.html">Home</a><span>/</span><span>Bardium POS</span></nav>
+    <p class="eyebrow" data-reveal>Our product · Restaurants &amp; cafés</p>
+    <h1 class="display h1" data-split>Bardium<br><span class="serif">POS.</span></h1>
+    <p class="lead" data-reveal data-delay=".2">One {secure()} system to run your restaurant or café: billing, tables, kitchen, QR ordering, loyalty and reports. Made for Indian restaurants, and themed to look like yours.</p>
+    <div class="btn-row" data-reveal data-delay=".3">{btn("Book a live demo", POS_DEMO, extra=' target="_blank" rel="noopener"')}<a class="btn btn--ghost" href="#modules"><span class="btn__label"><span>See what's inside</span><span aria-hidden="true">See what's inside</span></span>{icon("arrow", "btn__arrow")}</a></div>
+    <div class="chips" data-reveal data-delay=".4">{SEC_CHIP}<span class="chip">Made for India</span><span class="chip">UPI payments</span></div>
+  </div>
+</section>
+{marquee(["Billing", "Tables", "Kitchen", "QR ordering", "Loyalty", "Reports"], True)}
+
+<section class="section section--tight" aria-label="Every screen">
+  <div class="container">
+    <div class="section-head section-head--split">
+      <div><p class="eyebrow" data-reveal>One system</p><h2 class="display h2" data-split>Every screen,<br><span class="serif">in sync.</span></h2></div>
+      <p class="lead" data-reveal data-delay=".15">The counter, the waiter's phone, the kitchen and the guest's table all work together. An order placed anywhere shows up everywhere, instantly.</p>
+    </div>
+    <div class="pos-devices" data-reveal>{pos_counter()}{pos_waiter()}{pos_guest()}</div>
+  </div>
+</section>
+
+<section class="section section--tight" id="modules" aria-label="What is inside">
+  <div class="container">
+    <div class="section-head section-head--split">
+      <div><p class="eyebrow" data-reveal>What's inside</p><h2 class="display h2" data-split>Everything your<br><span class="serif">restaurant needs.</span></h2></div>
+      <p class="lead" data-reveal data-delay=".15">From the first order to the last bill of the day, Bardium POS covers the whole flow, with no extra tools to juggle.</p>
+    </div>
+    <div class="sec-grid sec-grid--4">{mods}</div>
+  </div>
+</section>
+
+<section class="section section--paper" aria-label="Why Bardium POS">
+  <canvas class="bg-canvas" data-bg="ripple" aria-hidden="true"></canvas>
+  <div class="container">
+    <div class="section-head"><p class="eyebrow" data-reveal>Why Bardium POS</p><h2 class="display h2" data-split>Made for you,<br><span class="serif">not for everyone.</span></h2></div>
+    <div class="principles">
+      <div class="principle" data-reveal><div class="principle__k">i.</div><h3>Themed to your brand</h3><p>Every restaurant gets its own name, colours and look. Your guests see your brand, not ours.</p></div>
+      <div class="principle" data-reveal data-delay=".1"><div class="principle__k">ii.</div><h3>Built for India</h3><p>Made around how Indian restaurants and cafés work: UPI payments, WhatsApp sign-in and quick table service.</p></div>
+      <div class="principle" data-reveal data-delay=".2"><div class="principle__k">iii.</div><h3>{secure("Secured")}, restaurant by restaurant</h3><p>Each restaurant's data is kept separate, and every staff member signs in with their own login.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" aria-label="Editions">
+  <div class="container">
+    <div class="section-head section-head--center">
+      <p class="eyebrow" data-reveal>Two ways to run it</p>
+      <h2 class="display h2" data-split>Pick the edition<br><span class="serif">that fits.</span></h2>
+    </div>
+    <div class="engage engage--two">
+      <div class="engage-card engage-card--featured" data-reveal><span class="engage-card__k">Online edition</span><h3>Cloud POS</h3><p>Runs over the internet, so the counter, waiter phones, kitchen and guest QR all stay in sync.</p><ul class="feature-list feature-list--single"><li>Your own address and branding</li><li>Counter, waiters, kitchen and guests</li><li>Updates and support from Bardium</li></ul></div>
+      <div class="engage-card" data-reveal data-delay=".1"><span class="engage-card__k">Offline edition · Coming soon</span><h3>Counter POS</h3><p>A Windows edition for counters that need to keep working without the internet. Activated with a licence file.</p><ul class="feature-list feature-list--single"><li>Runs on a Windows computer</li><li>Licence-file activation</li><li>Currently in testing</li></ul></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="process-pos" aria-label="How we set it up">
+  <div class="container">
+    <div class="section-head section-head--split">
+      <div><p class="eyebrow" data-reveal>Getting started</p><h2 class="display h2" data-split>From hello<br><span class="serif">to going live.</span></h2></div>
+      <p class="lead" data-reveal data-delay=".15">We handle the setup, the look and the training. You keep serving your guests.</p>
+    </div>
+    <div class="process">{steps}</div>
+  </div>
+</section>
+
+<section class="section fade-top fade-bottom" aria-label="Security">
+  <canvas class="bg-canvas" data-bg="hex" aria-hidden="true"></canvas>
+  <div class="container">
+    <div class="section-head"><p class="eyebrow" data-reveal>Security &amp; privacy</p><h2 class="display h2" data-split>Your business,<br><span class="serif">{secure("secured")}.</span></h2></div>
+    <ul class="checklist">{cl}</ul>
+  </div>
+</section>
+{cta_section("See Bardium POS", "in action.", "orbits", "Book a live demo and see how Bardium POS would look and work in your restaurant or café. No pressure, no obligation.", ("Book a live demo", POS_DEMO))}
+'''
+    page("pos.html", "pos", "Bardium POS — Secured Restaurant &amp; Café POS | Bardium",
+         "Bardium POS is a secured restaurant and café POS for India: counter billing, waiter phones, kitchen tickets, QR table ordering, UPI payments, loyalty and reports, themed to your brand.", body)
+
 # ================================================================= WORK
 def build_work():
     body = f'''
@@ -806,4 +956,4 @@ def build_404():
     page("404.html", "404", "Page not found | Bardium", "The page you are looking for could not be found.", body, prefix="/")
 
 if __name__ == "__main__":
-    build_home(); build_services(); build_work(); build_security(); build_contact(); build_privacy(); build_terms(); build_404()
+    build_home(); build_services(); build_work(); build_pos(); build_security(); build_contact(); build_privacy(); build_terms(); build_404()

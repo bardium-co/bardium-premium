@@ -1087,3 +1087,26 @@ a.work-card__visual:focus-visible { outline: 2px solid #fff; outline-offset: -6p
 .next-card:hover .round-arrow, .brand:hover .brand__mark { transform: none; }
 .principle:hover { box-shadow: none; }
 .touch-hint, .tap-ring, .cursor, .cursor-ring { display: none !important; }
+
+/* ---------- Bardium POS page ---------- */
+.pos-devices { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 28px 36px; padding: 20px 0 10px; }
+.pos-counter { width: min(100%, 600px); transform: none !important; }
+.pos-devices .phone { margin: 0; flex: 0 0 auto; }
+.posui { display: grid; grid-template-columns: 1.55fr 1fr; gap: 14px; padding: 16px; min-height: 330px; background: #0b0b0b; }
+.posui__tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+.posui__tabs span, .posui__tabs b { font-size: 10px; font-weight: 700; padding: 6px 12px; border-radius: 100px; background: rgba(255,255,255,.07); color: rgba(255,255,255,.7); }
+.posui__tabs b { background: #fff; color: #000; }
+.posui__tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.posui__tile { display: flex; flex-direction: column; gap: 8px; padding: 10px; border-radius: 12px; border: 1px solid var(--line); background: #141414; font-size: 10.5px; font-weight: 700; line-height: 1.2; }
+.posui__tile i { display: block; aspect-ratio: 1.5; border-radius: 8px; background: linear-gradient(135deg, #2c2c2c, #151515); }
+.posui__bill { border-radius: 14px; border: 1px solid var(--line); background: #101010; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.posui__h { font-family: var(--f-display); font-weight: 800; font-size: 13px; text-transform: uppercase; letter-spacing: .08em; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+.posui__row { display: flex; justify-content: space-between; font-size: 11px; color: rgba(255,255,255,.8); }
+.posui__row em { font-style: normal; color: var(--muted); }
+.posui__pay { margin-top: auto; text-align: center; padding: 11px; border-radius: 10px; background: #fff; color: #000; font-size: 11px; font-weight: 800; }
+.engage--two { grid-template-columns: repeat(2, 1fr); max-width: 980px; margin: 0 auto; }
+@media (max-width: 900px) { .engage--two { grid-template-columns: 1fr; } }
+@media (max-width: 560px) { .posui { grid-template-columns: 1fr; min-height: 0; } .posui__tiles { grid-template-columns: repeat(3, 1fr); } .pos-devices .phone { max-width: 100%; } }
+@media (max-width: 420px) { .dock__link { font-size: 8.5px; letter-spacing: .02em; } .dock__link svg { width: 18px; height: 18px; } }
+.page-hero .btn-row { margin-top: 36px; }
+.page-hero .btn-row + .chips { margin-top: 24px; }
