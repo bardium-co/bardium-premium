@@ -312,6 +312,9 @@ def phone_lounge():
   <div class="ui-cta"><span>Status · Preparing</span><span>●</span></div>
 </div></div>'''
 
+# Set to True to show the Doha Airport Lounge project again on Home and Our Work.
+SHOW_LOUNGE = False
+
 SKYLINE_URL = "https://skyline-brief-web.onrender.com"
 
 def phone_skyline():
@@ -450,7 +453,7 @@ def build_home():
     </div>
     <div class="work-list">
       {work_card("abudi")}
-      {work_card("lounge")}
+      {work_card("lounge") if SHOW_LOUNGE else ""}
       {work_card("skyline")}
       {work_card("maharaja")}
       {NEXT_CARD}
@@ -745,18 +748,18 @@ def build_work():
   <div class="container">
     <div class="work-list">
       {work_card("abudi", True)}
-      {work_card("lounge", True)}
+      {work_card("lounge", True) if SHOW_LOUNGE else ""}
       {work_card("skyline", True)}
       {work_card("maharaja", True)}
       {NEXT_CARD}
     </div>
   </div>
 </section>
-{marquee(["Cafés", "Airport lounges", "Restaurants", "Startups", "Retail", "Enterprises"])}
+{marquee(["Cafés", "Restaurants", "Startups", "Retail", "Enterprises"])}
 {cta_section("Your story,", "built next.", "tunnel")}
 '''
     page("work.html", "work", "Our Work — Live Projects &amp; Case Studies | Bardium",
-         "Case studies from Bardium: a QR table ordering system for Abudi Coffee Roasters a bilingual luxury lounge ordering and KOT system in Doha, and Skyline Brief, an AI news app for Dubai real estate.", body)
+         "Case studies from Bardium: a QR table ordering system for Abudi Coffee Roasters, a business website for Maharaja Sharp Tools, and Skyline Brief, an AI news app for Dubai real estate.", body)
 
 # ================================================================= SECURITY
 def build_security():
