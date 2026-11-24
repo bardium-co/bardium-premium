@@ -7,4 +7,6 @@
 - Owner preferences: premium black & white (CRED-like), no burger menu (desktop mega menu + mobile bottom dock), never show programming languages/tech stack, no stats/numbers, highlight "secured" wording, services are broad (any software/app), simple English.
 - Before pushing: check every page on desktop, tablet and phone widths, with no console errors and no horizontal scroll.
 - Bardium POS page (`pos.html`) is the exception to the black & white look: white & blue product theme from `assets/css/pos.css` (scoped to `body[data-page="pos"]`). At the owner's request it shows "Co-powered by Printel Business Solutions", 10,000+ customers and 16+ years of experience, and a "works with any POS device" hardware section.
-- POS page messaging: "Made in India, used worldwide" (never "made for India"), low & flexible pricing (no actual prices), Online and Offline editions both highlighted, and "trusted at a reputed international airport" — never name Qatar, Doha or the lounge on the site.
+- POS page messaging: "Made in India, used worldwide" (never "made for India"), low & flexible pricing (no actual prices), Online and Offline editions both highlighted. No airport mention on the POS page.
+- The airport lounge project shows on Home and Our Work as "International Airport Lounge" (`SHOW_LOUNGE`) — never name Qatar, Doha or the lounge brand anywhere on the site.
+- CSS/JS links carry a `?v=<hash>` (see `V()` in build.py) because `/assets/*` is cached for a week — always link assets through `V()`.

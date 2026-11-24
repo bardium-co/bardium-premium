@@ -505,3 +505,4 @@ body[data-page="pos"] .footer .container { background: transparent; }
   .pz-trust__card { flex-direction: column; gap: 14px; }
   .pz-copower { font-size: 13.5px; }
 }
+.pz-trust--one { grid-template-columns: 1fr; max-width: 820px; }

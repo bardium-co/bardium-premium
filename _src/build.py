@@ -109,6 +109,12 @@ PROCESS = [
 ]
 
 # ---------------------------------------------------------------- partials
+import hashlib
+def V(rel):
+    """Asset URL with a content hash, so browsers always load the latest file after a deploy."""
+    with open(os.path.join(OUT, rel), "rb") as fh:
+        return "{P}" + rel + "?v=" + hashlib.sha1(fh.read()).hexdigest()[:10]
+
 def head(title, desc, path, extra=""):
     url = f"{SITE}/{path}" if path else SITE + "/"
     return f'''<!doctype html>
@@ -132,9 +138,9 @@ def head(title, desc, path, extra=""):
 <link rel="apple-touch-icon" href="{{P}}assets/img/apple-touch-icon.png">
 <link rel="preload" href="{{P}}assets/fonts/outfit-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="{{P}}assets/fonts/instrument-serif-latin-400-italic.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="{{P}}assets/css/style.css">
-<script src="{{P}}assets/js/bg.js" defer></script>
-<script src="{{P}}assets/js/main.js" defer></script>
+<link rel="stylesheet" href="{V("assets/css/style.css")}">
+<script src="{V("assets/js/bg.js")}" defer></script>
+<script src="{V("assets/js/main.js")}" defer></script>
 {extra}</head>
 '''
 
@@ -301,7 +307,7 @@ def phone_abudi():
 
 def phone_lounge():
     return f'''<div class="phone phone--dark" aria-hidden="true"><div class="phone__screen"><span class="phone__notch"></span>
-  <div class="ui-top"><div class="ui-kicker">Doha Lounge · Seat 14A</div><div class="ui-title">Good evening.<br>Dine at leisure.</div><div class="ui-ar">قائمة الطعام</div></div>
+  <div class="ui-top"><div class="ui-kicker">Airport Lounge · Seat 14A</div><div class="ui-title">Good evening.<br>Dine at leisure.</div><div class="ui-ar">قائمة الطعام</div></div>
   <div class="ui-status"><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div>
   <div class="ui-tabs"><span class="ui-tab is-on">Mains</span><span class="ui-tab">Arabic</span><span class="ui-tab">Desserts</span></div>
   <div class="ui-list">
@@ -312,8 +318,8 @@ def phone_lounge():
   <div class="ui-cta"><span>Status · Preparing</span><span>●</span></div>
 </div></div>'''
 
-# Set to True to show the Doha Airport Lounge project again on Home and Our Work.
-SHOW_LOUNGE = False
+# Airport lounge project on Home and Our Work. Never name Qatar, Doha or the lounge brand on the site.
+SHOW_LOUNGE = True
 
 SKYLINE_URL = "https://skyline-brief-web.onrender.com"
 
@@ -354,7 +360,7 @@ def work_card(kind, detailed=False):
         chips = ["Product catalogue", "Quote &amp; WhatsApp", "Mobile friendly", "Secured by default"]
     else:
         visual = phone_lounge() + chip_float("float-chip--a", "lang", "English · العربية", "One-tap switch") + chip_float("float-chip--b", "lock", "Staff login", "Per-user accounts")
-        tag, title, lead = "Luxury Lounge Ordering &amp; KOT", "Doha Airport<br>Lounge", "A premium bilingual ordering and kitchen management system for a luxury airport lounge in Doha. Guests order from their seat; staff run every ticket on a real-time kitchen screen."
+        tag, title, lead = "Luxury Lounge Ordering &amp; KOT", "International<br>Airport Lounge", "A premium bilingual ordering and kitchen management system for a luxury lounge at a reputed international airport. Guests order from their seat; staff run every ticket on a real-time kitchen screen."
         feats = LOUNGE_FEATURES
         chips = ["Luxury guest experience", "Arabic &amp; English", "Real-time KOT", "Per-staff accountability"]
     fl = "".join(f"<li>{f}</li>" for f in (feats if detailed else feats[:4]))
@@ -698,7 +704,6 @@ def build_pos():
       </div>
       <ul class="pz-checks" data-reveal data-delay=".24">{ticks(["Works online &amp; offline", "Low, flexible pricing", "Works on any POS device", "Secured by default"])}</ul>
       <p class="pz-copower" data-reveal data-delay=".3"><span class="pz-copower__ic">{picon("spark")}</span>Co-powered by <b>Printel Business Solutions</b></p>
-      <p class="pz-copower pz-copower--air" data-reveal data-delay=".34"><span class="pz-copower__ic">{picon("plane")}</span>Trusted at a <b>reputed international airport</b></p>
     </div>
     <div class="pz-hero__visual" data-reveal data-delay=".1">
       <div class="pz-browser">
@@ -875,9 +880,8 @@ def build_pos():
 </section>
 
 <section class="pz-sec-wrap pz-sec-wrap--tint" aria-label="Trusted worldwide">
-  <div class="pz-wrap pz-trust">
-    <article class="pz-trust__card" data-reveal><span class="pz-trust__ic">{picon("plane")}</span><div><h3>Trusted at a reputed international airport</h3><p>Our ordering and kitchen system serves a premium lounge at a reputed international airport, where speed and quality matter every minute.</p></div></article>
-    <article class="pz-trust__card" data-reveal data-delay=".08"><span class="pz-trust__ic">{icon("globe")}</span><div><h3>Made in India. Used worldwide.</h3><p>Built in India for restaurants and cafés everywhere, with the same care, speed and security wherever you are.</p></div></article>
+  <div class="pz-wrap pz-trust pz-trust--one">
+    <article class="pz-trust__card" data-reveal><span class="pz-trust__ic">{icon("globe")}</span><div><h3>Made in India. Used worldwide.</h3><p>Built in India for restaurants and cafés everywhere, with the same care, speed and security wherever you are.</p></div></article>
   </div>
 </section>
 
@@ -973,7 +977,7 @@ def build_pos():
 '''
     page("pos.html", "pos", "Bardium POS — Secured Restaurant &amp; Café POS Software | Bardium",
          "Bardium POS, co-powered by Printel Business Solutions, is a secured restaurant and café POS, made in India and used worldwide, with online and offline editions, low and flexible pricing, and support for any POS device: billing, live table view, kitchen tickets, QR ordering, online orders, UPI payments and an owner view on your phone, themed to your brand.",
-         body, extra_head='<link rel="stylesheet" href="{P}assets/css/pos.css">\n')
+         body, extra_head=f'<link rel="stylesheet" href="{V("assets/css/pos.css")}">\n')
 
 
 # ================================================================= WORK
