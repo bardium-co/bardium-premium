@@ -586,151 +586,362 @@ def build_services():
 
 
 # ================================================================= BARDIUM POS
-POS_DEMO = "https://wa.me/919972782952?text=Hi%20Bardium%2C%20I%27d%20like%20a%20live%20demo%20of%20Bardium%20POS."
+POS_INV = "https://wa.me/919972782952?text=Hi%20Bardium%2C%20I%27d%20like%20early%20access%20to%20Bardium%20Invoice."
+POS_DEMO = "https://wa.me/919972782952?text=Hi%20Bardium%2C%20I%27d%20like%20a%20free%20demo%20of%20Bardium%20POS."
 
-POS_MODULES = [
- ("cart", "Counter billing", "Quick billing on a Windows computer. Add items, apply offers and close the bill in seconds."),
- ("phone", "Waiter phones", "Waiters take orders on an Android phone and send them straight to the kitchen."),
- ("bell", "Kitchen tickets (KOT)", "Every order shows up on the kitchen screen as a live ticket. No shouting, no lost paper."),
- ("qr", "QR table ordering", "Guests scan the table QR, browse the menu and order. They sign in with WhatsApp or Google, see recent orders and pay."),
- ("approve", "UPI payments", "Simple UPI payments for guests and staff, without the fuss of a heavy payment-gateway setup."),
- ("gift", "Loyalty &amp; offers", "A loyalty programme and marketing campaigns, set up and run for you by Bardium."),
- ("globe", "Your look, your menu", "Your menu, your name, your colours. Pick a theme that suits your restaurant or café."),
- ("eye", "Clear reports", "See what sells, what is slow and when you are busiest, all in one place."),
+# Extra line icons used only on the POS page
+PI = {
+ "store": '<path d="M3 9l1.5-5h15L21 9"/><path d="M4 9v11h16V9"/><path d="M3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0"/><path d="M10 20v-5h4v5"/>',
+ "chef": '<path d="M6 14a4 4 0 0 1-.6-7.9A5 5 0 0 1 15 4.4a4 4 0 1 1 3 9.6"/><path d="M6 14h12v6H6z"/><path d="M6 17h12"/>',
+ "coffee": '<path d="M17 8h1a3 3 0 0 1 0 6h-1"/><path d="M3 8h14v7a5 5 0 0 1-5 5H8a5 5 0 0 1-5-5z"/><path d="M7 2v3M11 2v3"/>',
+ "bolt2": '<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',
+ "cloudk": '<path d="M7 18a5 5 0 1 1 1-9.9A6 6 0 0 1 19.5 10 4 4 0 0 1 18 18z"/><path d="M10 14h4"/>',
+ "cake": '<path d="M4 21h16v-8H4z"/><path d="M4 16c2 1.5 4 1.5 6 0s4-1.5 6 0 4 1.5 4 0"/><path d="M12 13V9M12 6a1.5 1.5 0 0 0 1.5-1.5C13.5 3 12 2 12 2s-1.5 1-1.5 2.5A1.5 1.5 0 0 0 12 6z"/>',
+ "court": '<path d="M3 21V8l9-5 9 5v13"/><path d="M8 21v-7h8v7M3 21h18"/>',
+ "grid4": '<rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/>',
+ "merge": '<path d="M8 3v6a4 4 0 0 0 4 4h0a4 4 0 0 1 4 4v4"/><path d="M16 3v6a4 4 0 0 1-4 4"/><path d="m5 6 3-3 3 3M13 6l3-3 3 3"/>',
+ "calendar": '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/>',
+ "users": '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6 6 0 0 1 3.5 6"/>',
+ "bike": '<circle cx="5.5" cy="17" r="3.5"/><circle cx="18.5" cy="17" r="3.5"/><path d="M8 17h6l-3-7h4l3.5 7M11 10l-2-4H6"/>',
+ "bag": '<path d="M5 8h14l-1 13H6z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/>',
+ "history": '<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/>',
+ "chart": '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+ "toggle": '<rect x="2" y="7" width="20" height="10" rx="5"/><circle cx="16" cy="12" r="3"/>',
+ "wifioff": '<path d="M2 2l20 20M8.5 16.1a5 5 0 0 1 7 0M5 12.6a10 10 0 0 1 5.2-2.7M16.8 10.1a10 10 0 0 1 2.2 2.5M2 8.8a15 15 0 0 1 4.2-2.6M10.7 5a15 15 0 0 1 11.3 3.8M12 20h.01"/>',
+ "receipt": '<path d="M5 2v20l2.5-1.5L10 22l2-1.5 2 1.5 2.5-1.5L19 22V2l-2.5 1.5L14 2l-2 1.5L10 2 7.5 3.5z"/><path d="M9 8h6M9 12h6M9 16h4"/>',
+ "spark": '<path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M6 18l2.5-2.5M15.5 8.5 18 6"/>',
+ "support": '<path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="2" y="14" width="5" height="6" rx="2"/><rect x="17" y="14" width="5" height="6" rx="2"/><path d="M20 20a3 3 0 0 1-3 2h-3"/>',
+ "palette": '<path d="M12 3a9 9 0 1 0 0 18c1.4 0 2-1 2-2 0-1.5-1-1.6-1-3 0-1 .8-2 2-2h2a4 4 0 0 0 4-4 8 8 0 0 0-9-7z"/><circle cx="7.5" cy="11" r="1"/><circle cx="10.5" cy="7" r="1"/><circle cx="15" cy="7.5" r="1"/>',
+ "rupee": '<path d="M6 4h12M6 9h12M14 20 7 13h3a4.5 4.5 0 0 0 0-9"/>',
+ "plus": '<path d="M12 5v14M5 12h14"/>',
+}
+def picon(name, cls=""): return ic(PI[name], cls) if name in PI else icon(name, cls)
+
+POS_TYPES = [
+ ("chef", "Fine dine", "Floors, table service and a calm kitchen."),
+ ("coffee", "Cafés", "Quick counter billing and QR orders."),
+ ("bolt2", "Quick service", "Fast take away and token-style flow."),
+ ("cloudk", "Cloud kitchens", "Delivery orders, all in one inbox."),
+ ("cake", "Bakeries &amp; sweets", "Simple counter sales, all day."),
+ ("court", "Food courts", "Many counters, one clear view."),
+]
+
+POS_FEATURES = [
+ ("toggle", "Menu on / off", "Sold out? Switch a dish off in one tap."),
+ ("store", "Store open / close", "Open or close your outlet from anywhere."),
+ ("chef", "Kitchen screen", "Live order tickets (KOT) for the kitchen."),
+ ("bike", "Online orders", "Delivery orders land in one inbox."),
+ ("bag", "Take away &amp; delivery", "Separate, simple flows for each."),
+ ("calendar", "Advance orders", "Take orders for later, never forget one."),
+ ("users", "Reservations &amp; waitlist", "Book tables and manage the queue."),
+ ("merge", "Move &amp; merge tables", "Shift or join tables in seconds."),
+ ("clock", "Staff clock-in", "Simple attendance for your team."),
+ ("history", "Order history", "Find any old bill instantly."),
+ ("chart", "Today at a glance", "Sales and orders for the day."),
+ ("spark", "Guided setup", "A step-by-step guide to go live."),
 ]
 
 POS_STEPS = [
- ("01", "Meet &amp; understand", "We learn how your restaurant or café really works: tables, menu, staff and the way you serve."),
- ("02", "Theme &amp; set up", "We set up your menu and give your POS your own name, colours and look."),
- ("03", "Train &amp; go live", "We train your team on the counter, the waiter phones and the kitchen screen, then go live with you."),
- ("04", "Support &amp; grow", "Updates, support and security stay with us, and we help you grow with loyalty offers."),
+ ("Free demo", "We show you Bardium POS working, on your phone or in your outlet."),
+ ("Setup &amp; theme", "We add your menu, tables and floors, in your name and colours."),
+ ("Train your team", "We train the counter, waiters and kitchen until they're confident."),
+ ("Go live &amp; grow", "We stay with you for support, updates and loyalty offers."),
 ]
 
-POS_CHECKS = [
- ("Each restaurant's data stays separate", "Your menu, orders and customers are never mixed with anyone else's."),
- ("Staff sign in with their own login", "Every person has their own credentials, and sees only what their role needs."),
- ("Encrypted connection", "Everything travels over HTTPS, so data between screens and the server cannot be read."),
- ("Customer privacy done properly", "Sign-in, consent and data rules are handled carefully and checked with a lawyer."),
- ("Backups and safe updates", "Your data is backed up, and updates go live without breaking your service."),
- ("Secured by default", "Security is part of the product from day one, at no extra cost."),
+POS_SEC = [
+ ("Your data stays separate", "Your menu, orders and customers are never mixed with anyone else's."),
+ ("A login for every staff", "Each person signs in with their own login and sees only their part."),
+ ("Encrypted connection", "Everything travels over HTTPS between your screens and the server."),
+ ("Privacy done properly", "Customer sign-in, consent and data rules are handled with care."),
+ ("Backups &amp; safe updates", "Your data is backed up and updates never stop your service."),
+ ("Secured by default", "Security is part of Bardium POS from day one, at no extra cost."),
 ]
 
-def pos_counter():
-    tiles = "".join(f'<span class="posui__tile"><i></i>{n}</span>' for n in ["Filter Coffee", "Masala Dosa", "Veg Biryani", "Paneer Tikka", "Cold Coffee", "Brownie"])
-    return f'''<div class="browser pos-counter" aria-hidden="true"><div class="browser__bar"><i></i><i></i><i></i><span>Bardium POS · Counter</span></div>
-  <div class="posui"><div class="posui__menu"><div class="posui__tabs"><b>All</b><span>Hot</span><span>Cold</span><span>Snacks</span></div><div class="posui__tiles">{tiles}</div></div>
-  <div class="posui__bill"><div class="posui__h">Table 07</div>
-    <div class="posui__row"><span>Filter Coffee</span><em>×2</em></div><div class="posui__row"><span>Masala Dosa</span><em>×1</em></div><div class="posui__row"><span>Brownie</span><em>×1</em></div>
-    <div class="posui__pay">Pay by UPI</div></div></div></div>'''
+POS_FAQ = [
+ ("Do I need internet to use Bardium POS?", "The Online edition needs internet so every screen stays in sync. If the counter goes offline, orders still reach the kitchen and billing continues when it reconnects. For places with weak internet, ask us about the Offline edition."),
+ ("Can I run it on my phone?", "Yes. Owners and managers can see running tables, online orders and open or close the store from their phone. Waiters take orders on a phone too."),
+ ("Will it look like my restaurant?", "Yes. Every restaurant gets its own name, colours and look, so your guests see your brand, not ours."),
+ ("Who sets it up and trains my staff?", "We do. We add your menu, tables and floors, and train your counter, waiters and kitchen before you go live."),
+ ("How do guests pay?", "Guests and staff can pay by UPI, quickly and simply."),
+ ("Is my data safe?", "Yes. Each restaurant's data is kept separate and secured, every staff member has their own login, and everything travels over an encrypted connection."),
+]
 
-def pos_waiter():
-    return f'''<div class="phone phone--dark" aria-hidden="true"><div class="phone__screen"><span class="phone__notch"></span>
-  <div class="ui-top"><div class="ui-kicker">Waiter · Table 07</div><div class="ui-title">New<br>order</div></div>
-  <div class="ui-tabs"><span class="ui-tab is-on">Starters</span><span class="ui-tab">Mains</span><span class="ui-tab">Drinks</span></div>
-  <div class="ui-list">
-    <div class="ui-item"><span class="ui-thumb"></span><div><div class="ui-name">Paneer Tikka</div><div class="ui-sub">Less spicy</div></div><span class="ui-add">+</span></div>
-    <div class="ui-item"><span class="ui-thumb"></span><div><div class="ui-name">Masala Dosa</div><div class="ui-sub">Extra chutney</div></div><span class="ui-add">+</span></div>
-    <div class="ui-item"><span class="ui-thumb"></span><div><div class="ui-name">Filter Coffee</div><div class="ui-sub">Strong</div></div><span class="ui-add">+</span></div>
-  </div>
-  <div class="ui-cta"><span>Send to kitchen</span><span>→</span></div>
-</div></div>'''
-
-def pos_guest():
-    return f'''<div class="phone" aria-hidden="true"><div class="phone__screen"><span class="phone__notch"></span>
-  <div class="ui-top"><div class="ui-kicker">Table 07 · Scan &amp; order</div><div class="ui-title">Your<br>Restaurant</div></div>
-  <div class="ui-tabs"><span class="ui-tab is-on">Popular</span><span class="ui-tab">Meals</span><span class="ui-tab">Sweets</span></div>
-  <div class="ui-list">
-    <div class="ui-item"><span class="ui-thumb"></span><div><div class="ui-name">Veg Biryani</div><div class="ui-sub">Served with raita</div></div><span class="ui-add">+</span></div>
-    <div class="ui-item"><span class="ui-thumb ui-thumb--b"></span><div><div class="ui-name">Cold Coffee</div><div class="ui-sub">With ice cream</div></div><span class="ui-add">+</span></div>
-    <div class="ui-item"><span class="ui-thumb ui-thumb--c"></span><div><div class="ui-name">Brownie</div><div class="ui-sub">Warm, fresh</div></div><span class="ui-add">+</span></div>
-  </div>
-  <div class="ui-cta"><span>Pay by UPI</span><span>→</span></div>
-</div></div>'''
+STATUS = [("blank", "Blank"), ("running", "Running"), ("printed", "Bill printed"), ("waiting", "KOT / QR waiting"), ("hold", "On hold"), ("reserved", "Reserved")]
 
 def build_pos():
-    mods = "".join(f'''<div class="sec-item" data-reveal data-delay="{(i%3)*0.08:.2f}"><div class="sec-item__icon">{icon(m[0])}</div><h3>{m[1]}</h3><p>{m[2]}</p></div>''' for i, m in enumerate(POS_MODULES))
-    steps = "".join(f'''<div class="step" data-reveal data-delay="{i*0.1:.1f}"><div class="step__num">{n}</div><h3>{t}</h3><p>{d}</p></div>''' for i, (n, t, d) in enumerate(POS_STEPS))
-    cl = "".join(f'<li data-reveal><span class="tick">{icon("check")}</span><div><strong>{a}</strong><span class="d">{b}</span></div></li>' for a, b in POS_CHECKS)
+    T = lambda s: s
+    types = "".join(f'<article class="pz-type" data-reveal data-delay="{(i%3)*0.06:.2f}"><span class="pz-type__ic">{picon(k)}</span><h3>{t}</h3><p>{d}</p></article>' for i, (k, t, d) in enumerate(POS_TYPES))
+    feats = "".join(f'<article class="pz-feat" data-reveal data-delay="{(i%4)*0.05:.2f}"><span class="pz-feat__ic">{picon(k)}</span><h3>{t}</h3><p>{d}</p></article>' for i, (k, t, d) in enumerate(POS_FEATURES))
+    steps = "".join(f'<li class="pz-step" data-reveal data-delay="{i*0.08:.2f}"><span class="pz-step__n">{i+1}</span><h3>{t}</h3><p>{d}</p></li>' for i, (t, d) in enumerate(POS_STEPS))
+    secs = "".join(f'<li class="pz-sec" data-reveal><span class="pz-tick">{icon("check")}</span><div><h3>{a}</h3><p>{b}</p></div></li>' for a, b in POS_SEC)
+    faqs = "".join(f'<details class="pz-faq__item"{" open" if i == 0 else ""}><summary><span>{q}</span><span class="pz-faq__plus">{picon("plus")}</span></summary><p>{a}</p></details>' for i, (q, a) in enumerate(POS_FAQ))
+    legend = "".join(f'<li><span class="pz-dot pz-dot--{k}"></span>{l}</li>' for k, l in STATUS)
+    def ticks(items): return "".join(f'<li><span class="pz-tick pz-tick--sm">{icon("check")}</span>{x}</li>' for x in items)
+    img = lambda src, alt, w, h, cls="": f'<img class="{cls}" src="{{P}}assets/img/pos/{src}" alt="{alt}" width="{w}" height="{h}" loading="lazy" decoding="async">'
     body = f'''
-<section class="page-hero" aria-label="Bardium POS">
-  <canvas class="bg-canvas" data-bg="network" aria-hidden="true"></canvas>
-  <div class="container page-hero__content">
-    <nav class="breadcrumb" aria-label="Breadcrumb"><a href="index.html">Home</a><span>/</span><span>Bardium POS</span></nav>
-    <p class="eyebrow" data-reveal>Our product · Restaurants &amp; cafés</p>
-    <h1 class="display h1" data-split>Bardium<br><span class="serif">POS.</span></h1>
-    <p class="lead" data-reveal data-delay=".2">One {secure()} system to run your restaurant or café: billing, tables, kitchen, QR ordering, loyalty and reports. Made for Indian restaurants, and themed to look like yours.</p>
-    <div class="btn-row" data-reveal data-delay=".3">{btn("Book a live demo", POS_DEMO, extra=' target="_blank" rel="noopener"')}<a class="btn btn--ghost" href="#modules"><span class="btn__label"><span>See what's inside</span><span aria-hidden="true">See what's inside</span></span>{icon("arrow", "btn__arrow")}</a></div>
-    <div class="chips" data-reveal data-delay=".4">{SEC_CHIP}<span class="chip">Made for India</span><span class="chip">UPI payments</span></div>
-  </div>
-</section>
-{marquee(["Billing", "Tables", "Kitchen", "QR ordering", "Loyalty", "Reports"], True)}
+<div class="pos-page">
 
-<section class="section section--tight" aria-label="Every screen">
-  <div class="container">
-    <div class="section-head section-head--split">
-      <div><p class="eyebrow" data-reveal>One system</p><h2 class="display h2" data-split>Every screen,<br><span class="serif">in sync.</span></h2></div>
-      <p class="lead" data-reveal data-delay=".15">The counter, the waiter's phone, the kitchen and the guest's table all work together. An order placed anywhere shows up everywhere, instantly.</p>
+<section class="pz-hero" aria-label="Bardium POS">
+  <div class="pz-wrap pz-hero__grid">
+    <div class="pz-hero__copy">
+      <p class="pz-pill" data-reveal><span class="pz-pill__dot"></span> Bardium POS · for restaurants &amp; cafés</p>
+      <h1 class="pz-h1" data-reveal data-delay=".05">Run your whole restaurant from <span class="pz-hl">one screen.</span></h1>
+      <p class="pz-lead" data-reveal data-delay=".12">Billing, tables, kitchen, QR orders, delivery and take away, all in one simple, {secure()} system. Made for Indian restaurants and themed to look like yours.</p>
+      <div class="pz-btns" data-reveal data-delay=".18">
+        <a class="pz-btn pz-btn--primary" href="{POS_DEMO}" target="_blank" rel="noopener">Book a free demo {icon("arrow")}</a>
+        <a class="pz-btn pz-btn--ghost" href="#features">See all features</a>
+      </div>
+      <ul class="pz-checks" data-reveal data-delay=".24">{ticks(["Made for India", "UPI payments", "Works on any POS device", "Secured by default"])}</ul>
+      <p class="pz-copower" data-reveal data-delay=".3"><span class="pz-copower__ic">{picon("spark")}</span>Co-powered by <b>Printel Business Solutions</b></p>
     </div>
-    <div class="pos-devices" data-reveal>{pos_counter()}{pos_waiter()}{pos_guest()}</div>
-  </div>
-</section>
-
-<section class="section section--tight" id="modules" aria-label="What is inside">
-  <div class="container">
-    <div class="section-head section-head--split">
-      <div><p class="eyebrow" data-reveal>What's inside</p><h2 class="display h2" data-split>Everything your<br><span class="serif">restaurant needs.</span></h2></div>
-      <p class="lead" data-reveal data-delay=".15">From the first order to the last bill of the day, Bardium POS covers the whole flow, with no extra tools to juggle.</p>
-    </div>
-    <div class="sec-grid sec-grid--4">{mods}</div>
-  </div>
-</section>
-
-<section class="section section--paper" aria-label="Why Bardium POS">
-  <canvas class="bg-canvas" data-bg="ripple" aria-hidden="true"></canvas>
-  <div class="container">
-    <div class="section-head"><p class="eyebrow" data-reveal>Why Bardium POS</p><h2 class="display h2" data-split>Made for you,<br><span class="serif">not for everyone.</span></h2></div>
-    <div class="principles">
-      <div class="principle" data-reveal><div class="principle__k">i.</div><h3>Themed to your brand</h3><p>Every restaurant gets its own name, colours and look. Your guests see your brand, not ours.</p></div>
-      <div class="principle" data-reveal data-delay=".1"><div class="principle__k">ii.</div><h3>Built for India</h3><p>Made around how Indian restaurants and cafés work: UPI payments, WhatsApp sign-in and quick table service.</p></div>
-      <div class="principle" data-reveal data-delay=".2"><div class="principle__k">iii.</div><h3>{secure("Secured")}, restaurant by restaurant</h3><p>Each restaurant's data is kept separate, and every staff member signs in with their own login.</p></div>
+    <div class="pz-hero__visual" data-reveal data-delay=".1">
+      <div class="pz-browser">
+        <div class="pz-browser__bar"><i></i><i></i><i></i><span>Bardium POS · Billing</span></div>
+        {img("pos-counter.webp", "Bardium POS table view on the counter computer", 1342, 842)}
+      </div>
+      <div class="pz-phone">{img("pos-owner-phone.webp", "Bardium POS owner view on a phone", 392, 851)}</div>
+      <div class="pz-float pz-float--a"><span class="pz-float__ic pz-float__ic--amber">{picon("bike")}</span><div><b>New online order</b><span>Table 9 · QR</span></div></div>
+      <div class="pz-float pz-float--b"><span class="pz-float__ic pz-float__ic--green">{icon("check")}</span><div><b>Paid by UPI</b><span>Table 14 · bill closed</span></div></div>
+      <div class="pz-float pz-float--c"><span class="pz-float__ic pz-float__ic--blue">{picon("chef")}</span><div><b>KOT sent</b><span>to the kitchen</span></div></div>
     </div>
   </div>
 </section>
 
-<section class="section" aria-label="Editions">
-  <div class="container">
-    <div class="section-head section-head--center">
-      <p class="eyebrow" data-reveal>Two ways to run it</p>
-      <h2 class="display h2" data-split>Pick the edition<br><span class="serif">that fits.</span></h2>
-    </div>
-    <div class="engage engage--two">
-      <div class="engage-card engage-card--featured" data-reveal><span class="engage-card__k">Online edition</span><h3>Cloud POS</h3><p>Runs over the internet, so the counter, waiter phones, kitchen and guest QR all stay in sync.</p><ul class="feature-list feature-list--single"><li>Your own address and branding</li><li>Counter, waiters, kitchen and guests</li><li>Updates and support from Bardium</li></ul></div>
-      <div class="engage-card" data-reveal data-delay=".1"><span class="engage-card__k">Offline edition · Coming soon</span><h3>Counter POS</h3><p>A Windows edition for counters that need to keep working without the internet. Activated with a licence file.</p><ul class="feature-list feature-list--single"><li>Runs on a Windows computer</li><li>Licence-file activation</li><li>Currently in testing</li></ul></div>
+<section class="pz-strip" aria-label="Highlights">
+  <div class="pz-wrap pz-strip__row">
+    <div class="pz-strip__item">{picon("receipt")}<span>Fast billing</span></div>
+    <div class="pz-strip__item">{picon("grid4")}<span>Live table view</span></div>
+    <div class="pz-strip__item">{picon("chef")}<span>Kitchen tickets</span></div>
+    <div class="pz-strip__item">{icon("qr")}<span>QR ordering</span></div>
+    <div class="pz-strip__item">{picon("rupee")}<span>UPI payments</span></div>
+    <div class="pz-strip__item">{icon("gift")}<span>Loyalty &amp; offers</span></div>
+  </div>
+</section>
+
+<section class="pz-partner" aria-label="Co-powered by Printel Business Solutions">
+  <div class="pz-wrap">
+    <div class="pz-partner__card" data-reveal>
+      <div class="pz-partner__copy">
+        <p class="pz-kicker">Our partner</p>
+        <h2 class="pz-h3">Bardium POS, <span class="pz-hl">co-powered by Printel Business Solutions.</span></h2>
+        <p>Bardium's modern, secured software, backed by Printel's long experience in billing and POS for businesses across India.</p>
+      </div>
+      <div class="pz-partner__stats">
+        <div class="pz-stat"><b>10,000+</b><span>Customers</span></div>
+        <div class="pz-stat"><b>16+</b><span>Years of experience</span></div>
+      </div>
     </div>
   </div>
 </section>
 
-<section class="section" id="process-pos" aria-label="How we set it up">
-  <div class="container">
-    <div class="section-head section-head--split">
-      <div><p class="eyebrow" data-reveal>Getting started</p><h2 class="display h2" data-split>From hello<br><span class="serif">to going live.</span></h2></div>
-      <p class="lead" data-reveal data-delay=".15">We handle the setup, the look and the training. You keep serving your guests.</p>
+<section class="pz-sec-wrap" aria-label="Who it is for">
+  <div class="pz-wrap">
+    <div class="pz-head pz-head--center">
+      <p class="pz-kicker" data-reveal>Made for every kind of food business</p>
+      <h2 class="pz-h2" data-reveal data-delay=".05">One POS. <span class="pz-hl">Any outlet.</span></h2>
+      <p class="pz-sub" data-reveal data-delay=".1">Whether you run a busy restaurant or a small café counter, Bardium POS fits the way you serve.</p>
     </div>
-    <div class="process">{steps}</div>
+    <div class="pz-types">{types}</div>
   </div>
 </section>
 
-<section class="section fade-top fade-bottom" aria-label="Security">
-  <canvas class="bg-canvas" data-bg="hex" aria-hidden="true"></canvas>
-  <div class="container">
-    <div class="section-head"><p class="eyebrow" data-reveal>Security &amp; privacy</p><h2 class="display h2" data-split>Your business,<br><span class="serif">{secure("secured")}.</span></h2></div>
-    <ul class="checklist">{cl}</ul>
+<section class="pz-sec-wrap pz-sec-wrap--tint" id="features" aria-label="Table view">
+  <div class="pz-wrap pz-row">
+    <div class="pz-row__copy">
+      <p class="pz-kicker" data-reveal>Live table view</p>
+      <h2 class="pz-h2" data-reveal data-delay=".05">Every table, <span class="pz-hl">at a glance.</span></h2>
+      <p class="pz-sub" data-reveal data-delay=".1">See which tables are running, which bills are printed and which orders are waiting, floor by floor, in clear colours.</p>
+      <ul class="pz-legend" data-reveal data-delay=".14">{legend}</ul>
+      <ul class="pz-list" data-reveal data-delay=".18">{ticks(["Floors like A/C, Non A/C, Rooftop and Family room", "Running time and bill amount on every table", "Move or merge tables in seconds", "Table reservations and a waitlist"])}</ul>
+    </div>
+    <div class="pz-row__media" data-reveal data-delay=".1">
+      <div class="pz-shot">{img("pos-tables.webp", "Colour-coded table view in Bardium POS", 1342, 450)}</div>
+    </div>
   </div>
 </section>
-{cta_section("See Bardium POS", "in action.", "orbits", "Book a live demo and see how Bardium POS would look and work in your restaurant or café. No pressure, no obligation.", ("Book a live demo", POS_DEMO))}
+
+<section class="pz-sec-wrap" aria-label="Kitchen and orders">
+  <div class="pz-wrap pz-row pz-row--flip">
+    <div class="pz-row__copy">
+      <p class="pz-kicker" data-reveal>Orders &amp; kitchen</p>
+      <h2 class="pz-h2" data-reveal data-delay=".05">From table to kitchen, <span class="pz-hl">instantly.</span></h2>
+      <p class="pz-sub" data-reveal data-delay=".1">Waiter orders, QR orders and online orders go straight to the kitchen as live tickets. Delivery and take away have their own simple flow.</p>
+      <div class="pz-note" data-reveal data-delay=".14"><span class="pz-note__ic">{picon("wifioff")}</span><div><b>Counter offline? Service goes on.</b><p>If the counter computer loses connection, orders still reach the kitchen. Billing simply waits for the counter to come back.</p></div></div>
+      <ul class="pz-list" data-reveal data-delay=".18">{ticks(["Live kitchen order tickets (KOT)", "Online orders waiting, clearly flagged", "Delivery, take away and advance orders", "Menu on / off when a dish runs out"])}</ul>
+    </div>
+    <div class="pz-row__media" data-reveal data-delay=".1">
+      <div class="pz-shot">{img("pos-topbar.webp", "Bardium POS top bar with kitchen, online orders and an offline alert", 1342, 160)}</div>
+      <div class="pz-kot">
+        <div class="pz-kot__card"><div class="pz-kot__h"><b>KOT · Table 9</b><span>Dine in</span></div><ul><li><span>2 ×</span> Masala Dosa</li><li><span>1 ×</span> Filter Coffee</li><li><span>1 ×</span> Paneer Tikka <em>less spicy</em></li></ul><div class="pz-kot__f pz-kot__f--amber">Preparing</div></div>
+        <div class="pz-kot__card"><div class="pz-kot__h"><b>KOT · Online</b><span>Delivery</span></div><ul><li><span>2 ×</span> Veg Biryani</li><li><span>1 ×</span> Brownie</li></ul><div class="pz-kot__f pz-kot__f--green">Ready</div></div>
+        <div class="pz-kot__card"><div class="pz-kot__h"><b>KOT · Table 14</b><span>QR order</span></div><ul><li><span>1 ×</span> Cold Coffee</li><li><span>2 ×</span> Samosa</li></ul><div class="pz-kot__f pz-kot__f--blue">New</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="pz-sec-wrap pz-sec-wrap--tint" aria-label="Owner app">
+  <div class="pz-wrap pz-row">
+    <div class="pz-row__copy">
+      <p class="pz-kicker" data-reveal>Owner view</p>
+      <h2 class="pz-h2" data-reveal data-delay=".05">Your restaurant, <span class="pz-hl">in your pocket.</span></h2>
+      <p class="pz-sub" data-reveal data-delay=".1">Not at the outlet? Open Bardium POS on your phone and see everything that's happening, live.</p>
+      <ul class="pz-list" data-reveal data-delay=".14">{ticks(["Open or close your store with one switch", "See running and free tables live", "Online orders waiting, right on your phone", "Staff clock-in and day timer"])}</ul>
+    </div>
+    <div class="pz-row__media pz-row__media--phone" data-reveal data-delay=".1">
+      <div class="pz-phone pz-phone--solo">{img("pos-owner-phone.webp", "Owner view of Bardium POS on a phone", 392, 851)}</div>
+      <div class="pz-badge pz-badge--a">{picon("toggle")} Store open</div>
+      <div class="pz-badge pz-badge--b">{picon("bike")} 2 online orders</div>
+    </div>
+  </div>
+</section>
+
+<section class="pz-sec-wrap" aria-label="Hardware">
+  <div class="pz-wrap">
+    <div class="pz-head pz-head--center">
+      <p class="pz-kicker" data-reveal>Hardware</p>
+      <h2 class="pz-h2" data-reveal data-delay=".05">Works with <span class="pz-hl">any POS device.</span></h2>
+      <p class="pz-sub" data-reveal data-delay=".1">Use Bardium POS on the hardware you already have, or let us help you choose the right setup for your outlet.</p>
+    </div>
+    <div class="pz-hw">
+      <article class="pz-hw__card" data-reveal><div class="pz-hw__img">{img("hw-terminal.webp", "Touch screen POS terminal", 640, 640)}</div><h3>Touch POS terminals</h3><p>Fast billing on a counter touch screen.</p></article>
+      <article class="pz-hw__card" data-reveal data-delay=".06"><div class="pz-hw__img">{img("hw-printer.webp", "Thermal receipt printer", 640, 640)}</div><h3>Receipt &amp; KOT printers</h3><p>Print bills and kitchen tickets.</p></article>
+      <article class="pz-hw__card" data-reveal data-delay=".12"><div class="pz-hw__img">{img("hw-handheld.webp", "Handheld Android POS device", 640, 640)}</div><h3>Handheld POS</h3><p>Take orders and bill right at the table.</p></article>
+      <article class="pz-hw__card" data-reveal data-delay=".18"><div class="pz-hw__img">{img("hw-kiosk.webp", "Self-order kiosk", 640, 640)}</div><h3>Self-order kiosks</h3><p>Let guests order and pay on their own.</p></article>
+    </div>
+    <ul class="pz-hw__also" data-reveal>{ticks(["Windows PCs &amp; laptops", "Android phones &amp; tablets", "Kitchen display screens", "Cash drawers &amp; barcode scanners"])}</ul>
+  </div>
+</section>
+
+<section class="pz-sec-wrap" aria-label="All features">
+  <div class="pz-wrap">
+    <div class="pz-head pz-head--center">
+      <p class="pz-kicker" data-reveal>And so much more</p>
+      <h2 class="pz-h2" data-reveal data-delay=".05">Everything you need. <span class="pz-hl">Nothing you don't.</span></h2>
+    </div>
+    <div class="pz-feats">{feats}</div>
+  </div>
+</section>
+
+<section class="pz-sec-wrap pz-sec-wrap--tint" aria-label="Editions">
+  <div class="pz-wrap">
+    <div class="pz-head pz-head--center">
+      <p class="pz-kicker" data-reveal>Two editions</p>
+      <h2 class="pz-h2" data-reveal data-delay=".05">Pick the one <span class="pz-hl">that fits.</span></h2>
+    </div>
+    <div class="pz-eds">
+      <article class="pz-ed pz-ed--main" data-reveal>
+        <span class="pz-ed__tag">Online edition</span>
+        <h3>Cloud POS</h3>
+        <p>Counter, waiter phones, kitchen and guest QR all stay in sync over the internet.</p>
+        <ul class="pz-list pz-list--light">{ticks(["Your own name, colours and look", "QR ordering and waiter phones", "Owner view on your phone", "Updates and support from Bardium"])}</ul>
+        <a class="pz-btn pz-btn--white" href="{POS_DEMO}" target="_blank" rel="noopener">Book a free demo {icon("arrow")}</a>
+      </article>
+      <article class="pz-ed" data-reveal data-delay=".08">
+        <span class="pz-ed__tag pz-ed__tag--amber">Offline edition</span>
+        <h3>Counter POS</h3>
+        <p>For counters that must keep billing without the internet. Runs on a Windows computer.</p>
+        <ul class="pz-list">{ticks(["Works without internet", "Runs on your counter computer", "Bills and kitchen tickets, always on", "Simple licence-key activation"])}</ul>
+        <a class="pz-btn pz-btn--ghost" href="{POS_DEMO}" target="_blank" rel="noopener">Book a free demo {icon("arrow")}</a>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="pz-sec-wrap" aria-label="Bardium Invoice">
+  <div class="pz-wrap">
+    <div class="pz-inv" data-reveal>
+      <div class="pz-inv__copy">
+        <span class="pz-soon"><span class="pz-soon__dot"></span> Coming very soon</span>
+        <h2 class="pz-h2">Bardium <span class="pz-hl">Invoice.</span></h2>
+        <p class="pz-sub">Simple, {secure()} billing and invoicing for every kind of business, not just restaurants. From the team behind Bardium POS.</p>
+        <ul class="pz-list">{ticks(["Create clean, professional invoices in seconds", "Keep track of who has paid and who hasn't", "Your business name and logo on every bill", "Works hand in hand with Bardium POS"])}</ul>
+        <div class="pz-btns"><a class="pz-btn pz-btn--primary" href="{POS_INV}" target="_blank" rel="noopener">Get early access {icon("arrow")}</a></div>
+      </div>
+      <div class="pz-inv__visual" aria-hidden="true">
+        <div class="pz-bill">
+          <div class="pz-bill__top"><div class="pz-bill__brand"><span class="pz-bill__logo">YB</span><div><b>Your Business</b><span>Tax invoice</span></div></div><span class="pz-bill__paid">Paid</span></div>
+          <div class="pz-bill__meta"><div><span>Billed to</span><b>Customer name</b></div><div><span>Date</span><b>Today</b></div></div>
+          <div class="pz-bill__rows">
+            <div class="pz-bill__row pz-bill__row--h"><span>Item</span><span>Qty</span><span>Amount</span></div>
+            <div class="pz-bill__row"><span>Product one</span><span>2</span><span>₹ ——</span></div>
+            <div class="pz-bill__row"><span>Product two</span><span>1</span><span>₹ ——</span></div>
+            <div class="pz-bill__row"><span>Service</span><span>1</span><span>₹ ——</span></div>
+          </div>
+          <div class="pz-bill__total"><span>Total</span><b>₹ ——</b></div>
+          <div class="pz-bill__actions"><span>{icon("doc")} Download</span><span>{icon("wa")} Share</span></div>
+        </div>
+        <div class="pz-bill pz-bill--back"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="pz-sec-wrap" aria-label="Getting started">
+  <div class="pz-wrap">
+    <div class="pz-head pz-head--center">
+      <p class="pz-kicker" data-reveal>Getting started</p>
+      <h2 class="pz-h2" data-reveal data-delay=".05">Live in <span class="pz-hl">four simple steps.</span></h2>
+      <p class="pz-sub" data-reveal data-delay=".1">We handle the setup, the look and the training. You keep serving your guests.</p>
+    </div>
+    <ol class="pz-steps">{steps}</ol>
+  </div>
+</section>
+
+<section class="pz-sec-wrap pz-navy" aria-label="Security">
+  <div class="pz-wrap">
+    <div class="pz-head pz-head--center">
+      <p class="pz-kicker pz-kicker--light" data-reveal>Security &amp; privacy</p>
+      <h2 class="pz-h2 pz-h2--light" data-reveal data-delay=".05">Your business, <span class="pz-hl pz-hl--light">secured.</span></h2>
+    </div>
+    <ul class="pz-secs">{secs}</ul>
+  </div>
+</section>
+
+<section class="pz-sec-wrap" aria-label="Support">
+  <div class="pz-wrap">
+    <div class="pz-support" data-reveal>
+      <span class="pz-support__ic">{picon("support")}</span>
+      <div class="pz-support__copy">
+        <h2 class="pz-h3">Real people. <span class="pz-hl">Real support.</span></h2>
+        <p>Stuck during a rush? Call us. We help you on the phone, on WhatsApp or at your outlet.</p>
+      </div>
+      <div class="pz-support__act">
+        <a class="pz-support__num" href="tel:+919972782952">{icon("phone")} +91 99727 82952</a>
+        <a class="pz-btn pz-btn--ghost pz-btn--sm" href="{POS_DEMO}" target="_blank" rel="noopener">{icon("wa")} WhatsApp us</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="pz-sec-wrap pz-sec-wrap--tint" aria-label="Questions">
+  <div class="pz-wrap pz-faq">
+    <div class="pz-faq__head">
+      <p class="pz-kicker" data-reveal>Questions</p>
+      <h2 class="pz-h2" data-reveal data-delay=".05">Good to <span class="pz-hl">know.</span></h2>
+      <p class="pz-sub" data-reveal data-delay=".1">Have another question? Call or message us any time.</p>
+    </div>
+    <div class="pz-faq__list" data-reveal data-delay=".1">{faqs}</div>
+  </div>
+</section>
+
+<section class="pz-cta" aria-label="Book a demo">
+  <div class="pz-wrap pz-cta__inner">
+    <h2 class="pz-h2 pz-h2--light" data-reveal>See Bardium POS in <span class="pz-serif">your</span> restaurant.</h2>
+    <p data-reveal data-delay=".08">Book a free demo. We'll show you how it looks and works with your own menu. No pressure.</p>
+    <div class="pz-btns pz-btns--center" data-reveal data-delay=".14">
+      <a class="pz-btn pz-btn--white" href="{POS_DEMO}" target="_blank" rel="noopener">Book a free demo {icon("arrow")}</a>
+      <a class="pz-btn pz-btn--outline-light" href="tel:+919972782952">{icon("phone")} Call us</a>
+    </div>
+  </div>
+</section>
+
+</div>
 '''
-    page("pos.html", "pos", "Bardium POS — Secured Restaurant &amp; Café POS | Bardium",
-         "Bardium POS is a secured restaurant and café POS for India: counter billing, waiter phones, kitchen tickets, QR table ordering, UPI payments, loyalty and reports, themed to your brand.", body)
+    page("pos.html", "pos", "Bardium POS — Secured Restaurant &amp; Café POS Software | Bardium",
+         "Bardium POS, co-powered by Printel Business Solutions, is a secured restaurant and café POS for India that works with any POS device: billing, live table view, kitchen tickets, QR ordering, online orders, UPI payments and an owner view on your phone, themed to your brand.",
+         body, extra_head='<link rel="stylesheet" href="{P}assets/css/pos.css">\n')
+
 
 # ================================================================= WORK
 def build_work():
