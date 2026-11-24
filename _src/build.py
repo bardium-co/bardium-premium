@@ -614,6 +614,9 @@ PI = {
  "palette": '<path d="M12 3a9 9 0 1 0 0 18c1.4 0 2-1 2-2 0-1.5-1-1.6-1-3 0-1 .8-2 2-2h2a4 4 0 0 0 4-4 8 8 0 0 0-9-7z"/><circle cx="7.5" cy="11" r="1"/><circle cx="10.5" cy="7" r="1"/><circle cx="15" cy="7.5" r="1"/>',
  "rupee": '<path d="M6 4h12M6 9h12M14 20 7 13h3a4.5 4.5 0 0 0 0-9"/>',
  "plus": '<path d="M12 5v14M5 12h14"/>',
+ "plane": '<path d="M10.5 13.5 3 11l1.5-1.5 7.5 1L16 6a2 2 0 0 1 3 3l-4.5 4 1 7.5L14 22l-2.5-7.5z"/>',
+ "tag": '<path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/>',
+ "cloud": '<path d="M7 18a5 5 0 1 1 1-9.9A6 6 0 0 1 19.5 10 4 4 0 0 1 18 18z"/>',
 }
 def picon(name, cls=""): return ic(PI[name], cls) if name in PI else icon(name, cls)
 
@@ -662,6 +665,8 @@ POS_FAQ = [
  ("Can I run it on my phone?", "Yes. Owners and managers can see running tables, online orders and open or close the store from their phone. Waiters take orders on a phone too."),
  ("Will it look like my restaurant?", "Yes. Every restaurant gets its own name, colours and look, so your guests see your brand, not ours."),
  ("Who sets it up and trains my staff?", "We do. We add your menu, tables and floors, and train your counter, waiters and kitchen before you go live."),
+ ("How much does Bardium POS cost?", "Our pricing is low and flexible. It depends on your outlet and the features you need, for both the Online and Offline editions. Book a free demo and we'll give you a clear quote, with no obligation."),
+ ("Can I use Bardium POS outside India?", "Yes. Bardium POS is made in India and built for restaurants and cafés anywhere in the world."),
  ("How do guests pay?", "Guests and staff can pay by UPI, quickly and simply."),
  ("Is my data safe?", "Yes. Each restaurant's data is kept separate and secured, every staff member has their own login, and everything travels over an encrypted connection."),
 ]
@@ -684,15 +689,16 @@ def build_pos():
 <section class="pz-hero" aria-label="Bardium POS">
   <div class="pz-wrap pz-hero__grid">
     <div class="pz-hero__copy">
-      <p class="pz-pill" data-reveal><span class="pz-pill__dot"></span> Bardium POS · for restaurants &amp; cafés</p>
+      <p class="pz-pill" data-reveal><span class="pz-pill__dot"></span> Bardium POS · Made in India, used worldwide</p>
       <h1 class="pz-h1" data-reveal data-delay=".05">Run your whole restaurant from <span class="pz-hl">one screen.</span></h1>
-      <p class="pz-lead" data-reveal data-delay=".12">Billing, tables, kitchen, QR orders, delivery and take away, all in one simple, {secure()} system. Made for Indian restaurants and themed to look like yours.</p>
+      <p class="pz-lead" data-reveal data-delay=".12">Billing, tables, kitchen, QR orders, delivery and take away, all in one simple, {secure()} system. Made in India for restaurants and cafés around the world, and themed to look like yours.</p>
       <div class="pz-btns" data-reveal data-delay=".18">
         <a class="pz-btn pz-btn--primary" href="{POS_DEMO}" target="_blank" rel="noopener">Book a free demo {icon("arrow")}</a>
         <a class="pz-btn pz-btn--ghost" href="#features">See all features</a>
       </div>
-      <ul class="pz-checks" data-reveal data-delay=".24">{ticks(["Made for India", "UPI payments", "Works on any POS device", "Secured by default"])}</ul>
+      <ul class="pz-checks" data-reveal data-delay=".24">{ticks(["Works online &amp; offline", "Low, flexible pricing", "Works on any POS device", "Secured by default"])}</ul>
       <p class="pz-copower" data-reveal data-delay=".3"><span class="pz-copower__ic">{picon("spark")}</span>Co-powered by <b>Printel Business Solutions</b></p>
+      <p class="pz-copower pz-copower--air" data-reveal data-delay=".34"><span class="pz-copower__ic">{picon("plane")}</span>Trusted at a <b>reputed international airport</b></p>
     </div>
     <div class="pz-hero__visual" data-reveal data-delay=".1">
       <div class="pz-browser">
@@ -713,8 +719,8 @@ def build_pos():
     <div class="pz-strip__item">{picon("grid4")}<span>Live table view</span></div>
     <div class="pz-strip__item">{picon("chef")}<span>Kitchen tickets</span></div>
     <div class="pz-strip__item">{icon("qr")}<span>QR ordering</span></div>
-    <div class="pz-strip__item">{picon("rupee")}<span>UPI payments</span></div>
-    <div class="pz-strip__item">{icon("gift")}<span>Loyalty &amp; offers</span></div>
+    <div class="pz-strip__item">{picon("cloud")}<span>Online &amp; offline</span></div>
+    <div class="pz-strip__item">{picon("tag")}<span>Low, flexible pricing</span></div>
   </div>
 </section>
 
@@ -739,7 +745,7 @@ def build_pos():
     <div class="pz-head pz-head--center">
       <p class="pz-kicker" data-reveal>Made for every kind of food business</p>
       <h2 class="pz-h2" data-reveal data-delay=".05">One POS. <span class="pz-hl">Any outlet.</span></h2>
-      <p class="pz-sub" data-reveal data-delay=".1">Whether you run a busy restaurant or a small café counter, Bardium POS fits the way you serve.</p>
+      <p class="pz-sub" data-reveal data-delay=".1">Whether you run a busy restaurant or a small café counter, in India or anywhere in the world, Bardium POS fits the way you serve.</p>
     </div>
     <div class="pz-types">{types}</div>
   </div>
@@ -826,8 +832,9 @@ def build_pos():
 <section class="pz-sec-wrap pz-sec-wrap--tint" aria-label="Editions">
   <div class="pz-wrap">
     <div class="pz-head pz-head--center">
-      <p class="pz-kicker" data-reveal>Two editions</p>
-      <h2 class="pz-h2" data-reveal data-delay=".05">Pick the one <span class="pz-hl">that fits.</span></h2>
+      <p class="pz-kicker" data-reveal>Online &amp; offline</p>
+      <h2 class="pz-h2" data-reveal data-delay=".05">Online or offline. <span class="pz-hl">Your choice.</span></h2>
+      <p class="pz-sub" data-reveal data-delay=".1">Bardium POS comes in two full editions. Run it in the cloud with every screen in sync, or offline on your counter when the internet can't be trusted.</p>
     </div>
     <div class="pz-eds">
       <article class="pz-ed pz-ed--main" data-reveal>
@@ -837,14 +844,40 @@ def build_pos():
         <ul class="pz-list pz-list--light">{ticks(["Your own name, colours and look", "QR ordering and waiter phones", "Owner view on your phone", "Updates and support from Bardium"])}</ul>
         <a class="pz-btn pz-btn--white" href="{POS_DEMO}" target="_blank" rel="noopener">Book a free demo {icon("arrow")}</a>
       </article>
-      <article class="pz-ed" data-reveal data-delay=".08">
-        <span class="pz-ed__tag pz-ed__tag--amber">Offline edition</span>
+      <article class="pz-ed pz-ed--dark" data-reveal data-delay=".08">
+        <span class="pz-ed__tag">Offline edition</span>
         <h3>Counter POS</h3>
         <p>For counters that must keep billing without the internet. Runs on a Windows computer.</p>
-        <ul class="pz-list">{ticks(["Works without internet", "Runs on your counter computer", "Bills and kitchen tickets, always on", "Simple licence-key activation"])}</ul>
-        <a class="pz-btn pz-btn--ghost" href="{POS_DEMO}" target="_blank" rel="noopener">Book a free demo {icon("arrow")}</a>
+        <ul class="pz-list pz-list--light">{ticks(["Works without internet", "Runs on your counter computer", "Bills and kitchen tickets, always on", "Simple licence-key activation"])}</ul>
+        <a class="pz-btn pz-btn--white" href="{POS_DEMO}" target="_blank" rel="noopener">Book a free demo {icon("arrow")}</a>
       </article>
     </div>
+  </div>
+</section>
+
+<section class="pz-sec-wrap" aria-label="Pricing">
+  <div class="pz-wrap">
+    <div class="pz-price" data-reveal>
+      <div class="pz-price__copy">
+        <span class="pz-price__tag">{picon("tag")} Pricing</span>
+        <h2 class="pz-h2 pz-h2--light">Low, flexible pricing.</h2>
+        <p>Premium software shouldn't cost a fortune. Bardium POS is priced to fit your outlet, whether it's one café counter or a growing chain.</p>
+        <div class="pz-btns"><a class="pz-btn pz-btn--white" href="{POS_DEMO}" target="_blank" rel="noopener">Get your price {icon("arrow")}</a></div>
+      </div>
+      <ul class="pz-price__pts">
+        <li><span class="pz-price__ic">{picon("tag")}</span><div><b>Low cost</b><p>Priced for real businesses, not just big chains.</p></div></li>
+        <li><span class="pz-price__ic">{picon("grid4")}</span><div><b>Flexible plans</b><p>Pay for the features and outlets you need.</p></div></li>
+        <li><span class="pz-price__ic">{picon("cloud")}</span><div><b>Online or offline</b><p>Both editions, priced for your setup.</p></div></li>
+        <li><span class="pz-price__ic">{icon("check")}</span><div><b>Clear quote</b><p>A free demo and a clear price before you decide.</p></div></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="pz-sec-wrap pz-sec-wrap--tint" aria-label="Trusted worldwide">
+  <div class="pz-wrap pz-trust">
+    <article class="pz-trust__card" data-reveal><span class="pz-trust__ic">{picon("plane")}</span><div><h3>Trusted at a reputed international airport</h3><p>Our ordering and kitchen system serves a premium lounge at a reputed international airport, where speed and quality matter every minute.</p></div></article>
+    <article class="pz-trust__card" data-reveal data-delay=".08"><span class="pz-trust__ic">{icon("globe")}</span><div><h3>Made in India. Used worldwide.</h3><p>Built in India for restaurants and cafés everywhere, with the same care, speed and security wherever you are.</p></div></article>
   </div>
 </section>
 
@@ -939,7 +972,7 @@ def build_pos():
 </div>
 '''
     page("pos.html", "pos", "Bardium POS — Secured Restaurant &amp; Café POS Software | Bardium",
-         "Bardium POS, co-powered by Printel Business Solutions, is a secured restaurant and café POS for India that works with any POS device: billing, live table view, kitchen tickets, QR ordering, online orders, UPI payments and an owner view on your phone, themed to your brand.",
+         "Bardium POS, co-powered by Printel Business Solutions, is a secured restaurant and café POS, made in India and used worldwide, with online and offline editions, low and flexible pricing, and support for any POS device: billing, live table view, kitchen tickets, QR ordering, online orders, UPI payments and an owner view on your phone, themed to your brand.",
          body, extra_head='<link rel="stylesheet" href="{P}assets/css/pos.css">\n')
 
 

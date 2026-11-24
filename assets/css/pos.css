@@ -460,3 +460,48 @@ body[data-page="pos"] .footer .container { background: transparent; }
 @media (max-width: 960px) { .pz-inv { grid-template-columns: 1fr; } }
 @media (max-width: 560px) { .pz-bill { transform: none; padding: 18px; } .pz-bill--back { display: none; } .pz-inv { border-radius: 22px; } }
 @media (prefers-reduced-motion: reduce) { .pz-soon__dot { animation: none; } }
+
+/* ---------- Airport trust badge in hero ---------- */
+.pz-copower--air { margin-top: 10px; margin-left: 0; }
+.pz-hero__copy .pz-copower { margin-right: 8px; }
+
+/* ---------- Offline edition, highlighted like Online ---------- */
+.pz-ed--dark { background: linear-gradient(145deg, #13285E 0%, #0A1A3F 100%); border-color: transparent; color: #fff; box-shadow: 0 40px 70px -40px rgba(10, 26, 63, .8); }
+.pz-ed--dark h3 { color: #fff; }
+.pz-ed--dark p { color: rgba(255, 255, 255, .84); }
+.pz-ed--dark .pz-ed__tag { background: rgba(255, 255, 255, .14); color: #fff; }
+.pz-ed--dark .pz-btn--white { color: var(--pz-navy); }
+
+/* ---------- Pricing highlight ---------- */
+.pz-price {
+  display: grid; grid-template-columns: 1fr 1.15fr; gap: clamp(28px, 4vw, 56px); align-items: center;
+  padding: clamp(30px, 4.5vw, 60px); border-radius: 28px; color: #fff;
+  background: radial-gradient(50% 80% at 0% 0%, rgba(143, 176, 255, .35), transparent 60%), linear-gradient(135deg, #1D5BF0 0%, #0E348F 100%);
+  box-shadow: 0 50px 90px -50px rgba(29, 91, 240, .9);
+}
+.pz-price__tag { display: inline-flex; align-items: center; gap: 8px; padding: 7px 14px; border-radius: 100px; background: rgba(255, 255, 255, .16); font-family: var(--f-display); font-weight: 700; font-size: 13px; letter-spacing: .04em; margin-bottom: 18px; }
+.pz-price__tag svg { width: 15px; height: 15px; stroke-width: 2; }
+.pz-price__copy p { margin-top: 14px; font-size: 17px; line-height: 1.6; color: rgba(255, 255, 255, .86); max-width: 460px; }
+.pz-price__pts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.pz-price__pts li { display: flex; gap: 12px; padding: 18px; border-radius: 18px; background: #fff; color: var(--pz-ink); }
+.pz-price__pts b { display: block; font-family: var(--f-display); font-size: 16.5px; color: var(--pz-navy); }
+.pz-price__pts p { font-size: 14px; line-height: 1.5; color: var(--pz-text); margin-top: 3px; }
+.pz-price__ic { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; background: var(--pz-blue-50); color: var(--pz-blue); flex-shrink: 0; }
+.pz-price__ic svg { width: 20px; height: 20px; stroke-width: 2; }
+
+/* ---------- Trusted worldwide ---------- */
+.pz-trust { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.pz-trust__card { display: flex; gap: 18px; padding: clamp(22px, 3vw, 32px); border-radius: 22px; background: #fff; border: 1px solid var(--pz-line); }
+.pz-trust__ic { display: grid; place-items: center; width: 56px; height: 56px; border-radius: 16px; background: var(--pz-blue); color: #fff; flex-shrink: 0; box-shadow: 0 16px 30px -14px rgba(29, 91, 240, .8); }
+.pz-trust__ic svg { width: 26px; height: 26px; stroke-width: 1.9; }
+.pz-trust__card h3 { font-size: clamp(1.2rem, 1.9vw, 1.45rem); font-weight: 800; line-height: 1.2; }
+.pz-trust__card p { margin-top: 8px; font-size: 15.5px; line-height: 1.6; color: var(--pz-text); }
+
+@media (max-width: 960px) {
+  .pz-price, .pz-trust { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  .pz-price__pts { grid-template-columns: 1fr; }
+  .pz-trust__card { flex-direction: column; gap: 14px; }
+  .pz-copower { font-size: 13.5px; }
+}
